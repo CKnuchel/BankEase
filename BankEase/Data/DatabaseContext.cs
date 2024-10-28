@@ -6,9 +6,9 @@ namespace BankEase.Data
 	public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbContext(options)
 	{
 		#region Properties
-		public DbSet<Customer> Customer { get; set; }
-		public DbSet<Account> Account { get; set; }
-		public DbSet<TransactionRecord> TransactionRecord { get; set; }
+		public DbSet<Customer> Customers { get; set; }
+		public DbSet<Account> Accounts { get; set; }
+		public DbSet<TransactionRecord> TransactionRecords { get; set; }
 		#endregion
 
 		#region Protecteds
