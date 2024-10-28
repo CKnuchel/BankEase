@@ -8,6 +8,7 @@ namespace BankEase.Data
 		#region Properties
 		public DbSet<Customer> Customer { get; set; }
 		public DbSet<Account> Account { get; set; }
+		public DbSet<TransactionRecord> TransactionRecord { get; set; }
 		#endregion
 
 		#region Protecteds
@@ -22,8 +23,13 @@ namespace BankEase.Data
 
 			// Die IBAN auf Unique stellen
 			modelBuilder.Entity<Account>()
-						.HasIndex(e => e.IBAN)
-						.IsUnique();
+			            .HasIndex(e => e.IBAN)
+			            .IsUnique();
+
+			// Defaulwerte für die TransactionRecord
+			modelBuilder.Entity<TransactionRecord>()
+			            .Property(e => e.TransactionTime)
+			            .HasDefaultValueSql("GETDATE()");
 		}
 		#endregion
 	}
