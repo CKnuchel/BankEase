@@ -1,4 +1,4 @@
-﻿namespace BankEase.Sessions;
+﻿namespace BankEase.Common;
 
 public static class SessionKey
 {

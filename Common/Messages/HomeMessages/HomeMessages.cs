@@ -1,4 +1,4 @@
-﻿namespace BankEase.Messages.HomeMessages
+﻿namespace BankEase.Common
 {
     public static class HomeMessages
     {

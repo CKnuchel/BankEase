@@ -1,5 +1,5 @@
+using BankEase.Common;
 using BankEase.Data;
-using BankEase.Messages.HomeMessages;
 using BankEase.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -40,7 +40,7 @@ namespace BankEase.Controllers
             }
 
             // Benutzer in der Session speichern
-            this.HttpContext.Session.SetInt32("user", user.Value);
+            this.HttpContext.Session.SetInt32(SessionKey.USER_ID, user.Value);
 
             return RedirectToAction("Index", "Account");
         }
