@@ -1,8 +1,25 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model IEnumerable<Customer>
+
+@{
+    ViewData["Title"] = "BankEase";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md mx-auto">
+    <h1 class="text-3xl font-bold mb-4 text-center text-indigo-600">Willkommen bei Ihrem persönlichen Banking</h1>
+    <p class="text-gray-600 mb-6 text-center">Verwalten Sie Ihre Finanzen mit Leichtigkeit und Zuversicht.</p>
+
+    <form asp-action="Login" method="post">
+        <div class="mb-4">
+            <label for="user" class="block text-sm font-medium text-gray-700 text-left">Benutzer</label>
+            <select id="user" name="user" class="mt-2 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                <option value="">-- Wählen Sie Ihren Benutzer aus --</option>
+                @foreach (var customerOption in (ViewBag.CustomerOptions as List<SelectListItem>)!)
+                {
+                    <option value="@customerOption.Value">@customerOption.Text</option>
+                }
+            </select>
+        </div>
+
+        <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300 mt-4">Anmelden</button>
+    </form>
 </div>
