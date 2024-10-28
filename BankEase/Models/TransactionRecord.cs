@@ -21,7 +21,7 @@ namespace BankEase.Models
 		public required string Text { get; set; }
 
 		[Required]
-		[Column(name: "AMOUNT", TypeName = "decimal(9,2)3")]
+		[Column(name: "AMOUNT", TypeName = "decimal(9,2)")]
 		public decimal Amount { get; set; }
 
 		[Required]
