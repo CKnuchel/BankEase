@@ -1,15 +1,23 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BankEase.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BankEase.Data
 {
-	public class DatabaseContext : DbContext
+	public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbContext(options)
 	{
-		#region Constructors
-		public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
-		{
-		}
+		#region Properties
+		private DbSet<Customer> Customer { get; set; }
 		#endregion
 
-		// DBSets
+		#region Protecteds
+		protected override void OnModelCreating(ModelBuilder modelBuilder)
+		{
+			base.OnModelCreating(modelBuilder);
+
+			modelBuilder.Entity<Customer>()
+			            .HasIndex(e => e.CustomerNumber)
+			            .IsUnique();
+		}
+		#endregion
 	}
 }
