@@ -1,4 +1,5 @@
-﻿using BankEase.Controllers;
+﻿using BankEase.Common;
+using BankEase.Controllers;
 using BankEase.Data;
 using BankEase.Models;
 using Microsoft.AspNetCore.Http;
@@ -73,6 +74,45 @@ namespace BankEase.Test.Controller.Home
             Assert.AreEqual(2, customerOptions.Count);
             Assert.AreEqual("Max Mustermann", customerOptions[0].Text);
             Assert.AreEqual("Mina Musterfrau", customerOptions[1].Text);
+        }
+
+        [TestMethod]
+        public void Login_RedirectsToAccountIndex_WhenUserIsValid()
+        {
+            // Arrange
+            const int nValidUserId = 1;
+
+            // Act
+            RedirectToActionResult? result = _controller.Login(nValidUserId) as RedirectToActionResult;
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual("Index", result.ActionName);
+            Assert.AreEqual("Account", result.ControllerName);
+        }
+
+        [TestMethod]
+        public void Login_AddsModelErrorAndRedirectsToIndex_WhenUserIsNull()
+        {
+            // Act
+            RedirectToActionResult? result = _controller.Login(null) as RedirectToActionResult;
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual("Index", result.ActionName);
+            Assert.IsTrue(_controller.ModelState.ContainsKey(SessionKey.USER_ID));
+        }
+
+        [TestMethod]
+        public void Login_AddsModelErrorAndRedirectsToIndex_WhenUserIsZero()
+        {
+            // Act
+            RedirectToActionResult? result = _controller.Login(0) as RedirectToActionResult;
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual("Index", result.ActionName);
+            Assert.IsTrue(_controller.ModelState.ContainsKey(SessionKey.USER_ID));
         }
         #endregion
 
