@@ -53,17 +53,7 @@ namespace BankEase.Controllers
                     return View("Index", viewModel);
                 }
 
-                TransactionRecord record = new()
-                                           {
-                                               AccountId = account.Id,
-                                               Amount = mAmount,
-                                               Type = TransactionType.Deposit,
-                                               Text = TransactionType.DepositText,
-                                               TransactionTime = DateTime.Now,
-                                               Account = account
-                                           };
-
-                context.TransactionRecords.Add(record);
+                context.TransactionRecords.Add(CreateTransactionRecord(account, mAmount));
 
                 account.Balance += mAmount;
                 await context.SaveChangesAsync();
@@ -83,6 +73,21 @@ namespace BankEase.Controllers
                 AccountViewModel errorViewModel = await _accountViewModel.WithMessage(DepositMessages.DepositFailed, isErrorMessage: true);
                 return View("Index", errorViewModel);
             }
+        }
+        #endregion
+
+        #region Privates
+        private TransactionRecord CreateTransactionRecord(Account account, decimal amount)
+        {
+            return new TransactionRecord
+                   {
+                       AccountId = account.Id,
+                       Amount = amount,
+                       Type = TransactionType.Deposit,
+                       Text = TransactionType.DepositText,
+                       TransactionTime = DateTime.Now,
+                       Account = account
+                   };
         }
         #endregion
     }
