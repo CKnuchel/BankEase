@@ -1,4 +1,5 @@
 ﻿using BankEase.Common;
+using BankEase.Common.TransactionHelper;
 using BankEase.Data;
 using BankEase.Models;
 using BankEase.ViewModel;
@@ -51,6 +52,18 @@ namespace BankEase.Controllers
                     AccountViewModel viewModel = await _accountViewModel.WithMessage(DepositMessages.AccountNotFound, isErrorMessage: true);
                     return View("Index", viewModel);
                 }
+
+                TransactionRecord record = new()
+                                           {
+                                               AccountId = account.Id,
+                                               Amount = mAmount,
+                                               Type = TransactionType.Deposit,
+                                               Text = TransactionType.DepositText,
+                                               TransactionTime = DateTime.Now,
+                                               Account = account
+                                           };
+
+                context.TransactionRecords.Add(record);
 
                 account.Balance += mAmount;
                 await context.SaveChangesAsync();
