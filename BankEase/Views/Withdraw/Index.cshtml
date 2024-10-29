@@ -1,15 +1,15 @@
 ﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
 @model BankEase.ViewModel.AccountViewModel
 
-<div class="container mx-auto pt-4">
-    <div class="text-sm p-2 rounded mb-4 h-10 flex items-center justify-center">
+<div class="container mx-auto rounded-lg pt-4">
+    <div class="text-sm p-2 rounded-lg mb-4 h-10 flex items-center justify-center">
         @if(Model.ErrorMessage != null)
         {
-            <p class="text-red-600 bg-red-100 w-full text-center">@Model.ErrorMessage</p>
+            <p class="text-red-600 bg-red-100 w-full text-center p-2 rounded-lg">@Model.ErrorMessage</p>
         }
         else if(Model.SuccessMessage != null)
         {
-            <p class="text-green-600 bg-green-100 w-full text-center">@Model.SuccessMessage</p>
+            <p class="text-green-600 bg-green-100 w-full text-center p-2 rounded-lg">@Model.SuccessMessage</p>
         }
     </div>
 
