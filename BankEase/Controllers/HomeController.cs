@@ -16,6 +16,9 @@ namespace BankEase.Controllers
         #region Publics
         public async Task<IActionResult> Index()
         {
+            // Löschen der allfälligen Sessionwerte
+            this.HttpContext.Session.Clear();
+
             // Laden der Customers
             List<Customer> customers = await _context.Customers.ToListAsync();
 
