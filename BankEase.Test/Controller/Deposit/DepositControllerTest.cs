@@ -24,9 +24,9 @@ namespace BankEase.Test.Controller.Deposit
         [TestInitialize]
         public void TestInitialize()
         {
-            // SQLite verwenden, da die InMemory DAtenbank keine Transaktionen unterstützt.
+            // SQLite verwenden, da die InMemory-Datenbank keine Transaktionen unterstützt
             DbContextOptions<DatabaseContext> options = new DbContextOptionsBuilder<DatabaseContext>()
-                                                        .UseSqlite("DataSource=:memory:") // Sqlite InMemory Datenbank
+                                                        .UseSqlite("DataSource=:memory:") // SQLite InMemory-Datenbank
                                                         .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                                                         .Options;
 
@@ -38,10 +38,16 @@ namespace BankEase.Test.Controller.Deposit
 
             _mockSession = new MockSession();
 
+            // Setup von HttpContext und IHttpContextAccessor
+            Mock<IHttpContextAccessor> mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
             Mock<HttpContext> mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(s => s.Session).Returns(_mockSession);
 
-            _controller = new DepositController(_inMemoryContext)
+            // Sitzung in HttpContext einrichten
+            mockHttpContext.Setup(s => s.Session).Returns(_mockSession);
+            mockHttpContextAccessor.Setup(s => s.HttpContext).Returns(mockHttpContext.Object);
+
+            // Controller instanziieren
+            _controller = new DepositController(_inMemoryContext, mockHttpContextAccessor.Object)
                           {
                               ControllerContext = new ControllerContext
                                                   {
@@ -72,7 +78,7 @@ namespace BankEase.Test.Controller.Deposit
 
             // Act
             ViewResult? result = await _controller.Deposit(-50m) as ViewResult;
-            DepositViewModel? viewModel = result?.Model as DepositViewModel;
+            AccountViewModel? viewModel = result?.Model as AccountViewModel;
 
             // Assert
             Assert.IsNotNull(result);
@@ -95,7 +101,7 @@ namespace BankEase.Test.Controller.Deposit
 
             // Act
             ViewResult? result = await _controller.Deposit(100m) as ViewResult;
-            DepositViewModel? viewModel = result?.Model as DepositViewModel;
+            AccountViewModel? viewModel = result?.Model as AccountViewModel;
 
             // Assert
             Assert.IsNotNull(result);
@@ -122,7 +128,7 @@ namespace BankEase.Test.Controller.Deposit
 
             // Act
             ViewResult? result = await _controller.Deposit(50m) as ViewResult;
-            DepositViewModel? viewModel = result?.Model as DepositViewModel;
+            AccountViewModel? viewModel = result?.Model as AccountViewModel;
 
             // Assert
             Assert.IsNotNull(result);
