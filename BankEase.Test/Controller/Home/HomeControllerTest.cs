@@ -14,9 +14,9 @@ namespace BankEase.Test.Controller.Home
     public class HomeControllerTest
     {
         #region Fields
-        private DatabaseContext _inMemoryContext;
-        private Mock<ISession> _mockSession;
-        private HomeController _controller;
+        private DatabaseContext _inMemoryContext = null!;
+        private MockSession _mockSession = null!;
+        private HomeController _controller = null!;
         #endregion
 
         #region Initialize and Cleanup
@@ -29,12 +29,12 @@ namespace BankEase.Test.Controller.Home
                                                         .Options;
             _inMemoryContext = new DatabaseContext(options);
 
-            // Session mocken
-            _mockSession = new Mock<ISession>();
+            // MockSession erstellen
+            _mockSession = new MockSession();
 
             // HttpContext-Setup für den Controller
             Mock<HttpContext> mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(s => s.Session).Returns(_mockSession.Object);
+            mockHttpContext.Setup(s => s.Session).Returns(_mockSession);
 
             // Controller initialisieren
             _controller = new HomeController(_inMemoryContext)
@@ -89,6 +89,11 @@ namespace BankEase.Test.Controller.Home
             Assert.IsNotNull(result);
             Assert.AreEqual("Index", result.ActionName);
             Assert.AreEqual("Account", result.ControllerName);
+
+            // Überprüfe, ob die Session gesetzt wurde
+            int? sessionUserId = _mockSession.GetInt32(SessionKey.USER_ID);
+            Assert.IsNotNull(sessionUserId);
+            Assert.AreEqual(nValidUserId, sessionUserId);
         }
 
         [TestMethod]
@@ -100,7 +105,7 @@ namespace BankEase.Test.Controller.Home
             // Assert
             Assert.IsNotNull(result);
             Assert.AreEqual("Index", result.ActionName);
-            Assert.IsTrue(_controller.ModelState.ContainsKey(SessionKey.USER_ID));
+            Assert.IsTrue(_controller.ModelState.ContainsKey("user"));
         }
 
         [TestMethod]
@@ -112,7 +117,7 @@ namespace BankEase.Test.Controller.Home
             // Assert
             Assert.IsNotNull(result);
             Assert.AreEqual("Index", result.ActionName);
-            Assert.IsTrue(_controller.ModelState.ContainsKey(SessionKey.USER_ID));
+            Assert.IsTrue(_controller.ModelState.ContainsKey("user"));
         }
         #endregion
 
