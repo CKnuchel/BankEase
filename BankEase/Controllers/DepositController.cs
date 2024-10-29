@@ -40,8 +40,8 @@ namespace BankEase.Controllers
                 return View("Index", viewModel);
             }
 
-            // Transaction starten
-            await using IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync();
+            // Transaktion starten
+            await using IDbContextTransaction? transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
@@ -64,7 +64,12 @@ namespace BankEase.Controllers
             }
             catch(Exception)
             {
-                await transaction.RollbackAsync();
+                // Nur Rollback, wenn die Transaktion noch aktiv ist
+                if(transaction.GetDbTransaction().Connection != null)
+                {
+                    await transaction.RollbackAsync();
+                }
+
                 DepositViewModel errorViewModel = await CreateDepositViewModelWithMessage(DepositMessages.DepositFailed, isErrorMessage: true);
                 return View("Index", errorViewModel);
             }
