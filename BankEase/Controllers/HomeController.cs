@@ -42,8 +42,6 @@ namespace BankEase.Controllers
                 return RedirectToAction("Index");
             }
 
-            int test = 123;
-
             // Benutzer in der Session speichern
             this.HttpContext.Session.SetInt32(SessionKey.USER_ID, nUserId.Value);
 
