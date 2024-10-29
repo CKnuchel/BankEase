@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <Folder Include="Messages\AccountMessages\" />
+    <Folder Include="Messages\WithdrawMessages\" />
+    <Folder Include="TransactionHelper\" />
   </ItemGroup>
 
 </Project>
