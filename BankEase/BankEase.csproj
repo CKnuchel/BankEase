@@ -20,4 +20,8 @@
     <ProjectReference Include="..\Common\BankEase.Common.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ViewModel\" />
+  </ItemGroup>
+
 </Project>

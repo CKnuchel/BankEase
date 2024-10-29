@@ -15,17 +15,16 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex items-center">
-                    <a asp-controller="Home" asp-action="Index" class="text-xl font-bold text-indigo-600 -ml-2">BankEase</a>
+                    <a asp-controller="Home" asp-action="Index" class="text-xl font-bold text-indigo-600">BankEase</a>
                 </div>
             </div>
         </div>
     </nav>
-
 </header>
 
 <!-- Zentrierter Container mit flex properties -->
-<div class="container flex items-center justify-center min-h-screen">
-    <main role="main" class="pb-3 flex items-center justify-center">
+<div class="container flex flex-col items-center pt-20">
+    <main role="main" class="pb-3 w-full max-w-md">
         @RenderBody()
     </main>
 </div>

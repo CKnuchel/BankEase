@@ -1,1 +1,30 @@
-﻿
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model BankEase.ViewModel.DepositViewModel
+
+<div class="container mx-auto pt-4">
+    <!-- Nachrichtensektion mit reserviertem Platz -->
+    <div class="text-sm p-2 rounded mb-4 h-10 flex items-center justify-center">
+        @if (Model.ErrorMessage != null)
+        {
+            <p class="text-red-600 bg-red-100 w-full text-center">@Model.ErrorMessage</p>
+        }
+        else if (Model.SuccessMessage != null)
+        {
+            <p class="text-green-600 bg-green-100 w-full text-center">@Model.SuccessMessage</p>
+        }
+    </div>
+
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md mx-auto">
+        <h1 class="text-3xl font-bold mb-4 text-center text-indigo-600">Einzahlung</h1>
+        <p class="text-gray-800 mb-6 text-left font-bold text-sm">Ihr aktueller Kontostand: @Model.CurrentSaldo CHF</p>
+
+        <form asp-action="Deposit" method="post">
+            <div class="mb-4">
+                <label for="amount" class="block text-sm font-medium text-gray-700 text-left">Betrag</label>
+                <input id="amount" name="mAmount" class="mt-2 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" type="number" placeholder="Gewünschter Betrag" required />
+            </div>
+
+            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300 mt-4">Einzahlen</button>
+        </form>
+    </div>
+</div>
