@@ -38,12 +38,12 @@ namespace BankEase.Test.Controller.Home
 
             // Controller initialisieren
             _controller = new HomeController(_inMemoryContext)
-                          {
-                              ControllerContext = new ControllerContext
-                                                  {
-                                                      HttpContext = mockHttpContext.Object
-                                                  }
-                          };
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = mockHttpContext.Object
+                }
+            };
 
             AddTestData();
         }

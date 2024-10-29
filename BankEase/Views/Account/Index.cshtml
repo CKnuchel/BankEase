@@ -1,0 +1,27 @@
+﻿@model IEnumerable<Account>
+
+@{
+    ViewData["Title"] = "BankEase";
+}
+
+<div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md mx-auto">
+    <h1 class="text-3xl font-bold mb-4 text-center text-indigo-600">
+        Willkommen zurück @this.ViewBag.CustomerFirstName!
+    </h1>
+    <p class="text-gray-600 mb-6 text-center">Wählen Sie das gewünschte Konto aus.</p>
+
+    <form asp-action="AccountSelection" method="post">
+        <div class="mb-4">
+            <label for="account" class="block text-sm font-medium text-gray-700 text-left">Bankkonto</label>
+            <select id="account" name="nAccountId" class="mt-2 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" required>
+                <option value="">-- Wählen Sie Ihr Konto aus --</option>
+                @foreach(SelectListItem accountOption in (ViewBag.AccountOptions as List<SelectListItem>)!)
+                {
+                    <option value="@accountOption.Value">@accountOption.Text</option>
+                }
+            </select>
+        </div>
+
+        <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300 mt-4">Auswählen</button>
+    </form>
+</div>

@@ -31,16 +31,18 @@ namespace BankEase.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(int? user)
+        public IActionResult Login(int? nUserId)
         {
-            if(user is null or 0)
+            if(nUserId is null or 0)
             {
                 this.ModelState.AddModelError("user", HomeMessages.LoginUserNotSelected);
                 return RedirectToAction("Index");
             }
 
+            int test = 123;
+
             // Benutzer in der Session speichern
-            this.HttpContext.Session.SetInt32(SessionKey.USER_ID, user.Value);
+            this.HttpContext.Session.SetInt32(SessionKey.USER_ID, nUserId.Value);
 
             return RedirectToAction("Index", "Account");
         }

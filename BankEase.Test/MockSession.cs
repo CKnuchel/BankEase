@@ -50,26 +50,24 @@ public class MockSession : ISession
         return false;
     }
 
-    // Speichert int-Werte unter Berücksichtigung der Endianness
     public void SetInt32(string key, int value)
     {
         byte[] bytes = BitConverter.GetBytes(value);
         if(BitConverter.IsLittleEndian)
         {
-            Array.Reverse(bytes); // Für konsistente Big-Endian-Speicherung
+            Array.Reverse(bytes);
         }
 
         _sessionStorage[key] = bytes;
     }
 
-    // Holt int-Werte und berücksichtigt die Endianness
     public int? GetInt32(string key)
     {
         if(_sessionStorage.TryGetValue(key, out byte[] bytes) && bytes.Length == 4)
         {
             if(BitConverter.IsLittleEndian)
             {
-                Array.Reverse(bytes); // Bytes wieder umkehren für richtige Interpretation
+                Array.Reverse(bytes);
             }
 
             return BitConverter.ToInt32(bytes, 0);

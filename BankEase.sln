@@ -5,9 +5,9 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BankEase", "BankEase\BankEase.csproj", "{0B9AFA34-FCBC-486D-B3F6-BCAA1AE8516A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankEase.Common", "Common\BankEase.Common.csproj", "{74907D88-FD22-4EFD-BC57-DED91B8979E5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BankEase.Common", "Common\BankEase.Common.csproj", "{74907D88-FD22-4EFD-BC57-DED91B8979E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankEase.Test", "BankEase.Test\BankEase.Test.csproj", "{DAEDE96C-E018-405B-9302-9A8CAF5C2F30}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BankEase.Test", "BankEase.Test\BankEase.Test.csproj", "{DAEDE96C-E018-405B-9302-9A8CAF5C2F30}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
