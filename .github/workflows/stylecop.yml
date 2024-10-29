@@ -1,8 +1,8 @@
-name: .NET StyleCop Analysis
+name: .NET Code Analysis with StyleCop
 
 on:
   push:
-    branches: ["*"]
+    branches: [ " * " ]
   pull_request:
     branches:
       - main
@@ -23,8 +23,8 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build and Run StyleCop Analysis
-        run: dotnet build --no-restore
-
-      - name: Run tests with StyleCop checks
-        run: dotnet test --no-build --verbosity normal
+      - name: Run StyleCop Analysis on all files
+        run: |
+          dotnet format --verify-no-changes --severity warn
+          dotnet build --no-restore
+          dotnet test --no-build --verbosity normal
