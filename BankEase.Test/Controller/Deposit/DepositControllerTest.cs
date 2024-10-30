@@ -10,6 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Moq;
 
+namespace BankEase.Test.Controller.Deposit;
+
 [TestClass]
 public class DepositControllerTest
 {
@@ -167,7 +169,7 @@ public class DepositControllerTest
 
         _inMemoryContext.Customers.AddRange(customers);
 
-        _inMemoryContext.Accounts.AddRange(new List<Account>
+        _inMemoryContext.Accounts.AddRange(new List<Models.Account>
                                            {
                                                new()
                                                {
