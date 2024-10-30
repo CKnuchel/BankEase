@@ -1,0 +1,25 @@
+﻿@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model BankEase.ViewModel.AccountViewModel
+
+@{
+    ViewData["Title"] = "BankEase";
+}
+
+<div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md mx-auto">
+    <h1 class="text-3xl font-bold mb-4 text-center text-indigo-600">Überweisung tätigen</h1>
+    <p class="text-gray-600 mb-6 text-center">Überweisen Sie Geld sicher auf ein anderes Konto.</p>
+
+    <p class="text-gray-800 mb-6 text-left font-bold text-sm">Ihr aktueller Kontostand: @Model.CurrentSaldo CHF</p>
+
+    <form asp-action="Transfer" method="post">
+        <div class="mb-4">
+            <label for="iban" class="block text-sm font-medium text-gray-700 text-left">IBAN des Empfängers</label>
+            <input id="iban" name="strIBAN" class="mt-2 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" type="text" placeholder="IBAN eingeben" required/>
+        </div>
+        <div class="mb-4">
+            <label for="amount" class="block text-sm font-medium text-gray-700 text-left">Betrag</label>
+            <input id="amount" name="mAmount" class="mt-2 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" type="number" step="0.05" placeholder="Betrag eingeben" required/>
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300 mt-4">Überweisen</button>
+    </form>
+</div>
