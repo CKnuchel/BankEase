@@ -1,7 +1,7 @@
 {
 
   "scripts": {
-    "tw:dev": "npx tailwindcss -i ./wwwroot/css/input.css -o ./wwwroot/css/output.css"
+    "tw:dev": "npx tailwindcss -i ./wwwroot/css/input.css -o ./wwwroot/css/output.css --watch"
   },
 
   "dependencies": {
