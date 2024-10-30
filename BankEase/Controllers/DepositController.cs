@@ -77,7 +77,7 @@ namespace BankEase.Controllers
         #endregion
 
         #region Privates
-        private TransactionRecord CreateTransactionRecord(Account account, decimal amount)
+        private static TransactionRecord CreateTransactionRecord(Account account, decimal amount)
         {
             return new TransactionRecord
                    {
