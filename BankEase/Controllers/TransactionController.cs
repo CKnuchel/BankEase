@@ -7,7 +7,7 @@ using BankEase.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Storage;
 
-public class TransactionController(DatabaseContext context, ValidationService validationService, SessionService sessionService, TransactionService transactionService) : Controller
+public class TransactionController(DatabaseContext context, ValidationService validationService, SessionService sessionService, TransactionService transactionService, AccountService accountService) : Controller
 {
     #region Fields
     public TransactionViewModel _transactionViewModel = new();
@@ -19,7 +19,7 @@ public class TransactionController(DatabaseContext context, ValidationService va
         if(!sessionService.IsAccountSessionValid(out int? nUserId, out int? nAccountId))
             return RedirectToHomeOrAccount(nUserId);
 
-        Account? account = await transactionService.GetAccountById(nAccountId!.Value);
+        Account? account = await accountService.GetAccountById(nAccountId!.Value);
         if(account == null) return RedirectToAction("Index", "Account");
 
         _transactionViewModel.CurrentSaldo = account.Balance;
@@ -44,11 +44,11 @@ public class TransactionController(DatabaseContext context, ValidationService va
                 return RedirectToAction("Index", "Account");
 
             // Überprüfen ob ein Account vorhanden ist
-            Account? account = await transactionService.GetAccountById(nAccountId!.Value);
+            Account? account = await accountService.GetAccountById(nAccountId!.Value);
             if(account == null) return CreateErrorMessage(TransactionMessages.AccountNotFound, strIBAN, mAmount);
 
             // Den Account des Empfängers, anhand der IBAN laden
-            Account? receivingAccount = await transactionService.GetAccountByIBAN(strIBAN);
+            Account? receivingAccount = await accountService.GetAccountByIBAN(strIBAN);
             if(receivingAccount == null)
                 return CreateErrorMessage(TransactionMessages.NoMatchingAccountFoundToIBAN, strIBAN, mAmount);
 

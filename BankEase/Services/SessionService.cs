@@ -12,10 +12,10 @@ public class SessionService(IHttpContextAccessor httpContextAccessor)
         return userId is > 0 && accountId is > 0;
     }
 
-    public bool IsUserSessionValid(out int? accountId)
+    public bool IsUserSessionValid(out int? nUserId)
     {
-        accountId = httpContextAccessor.HttpContext?.Session.GetInt32(SessionKey.ACCOUNT_ID);
-        return accountId is > 0;
+        nUserId = httpContextAccessor.HttpContext?.Session.GetInt32(SessionKey.USER_ID);
+        return nUserId is > 0;
     }
     #endregion
 }

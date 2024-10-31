@@ -1,24 +1,12 @@
 ﻿using BankEase.Common.TransactionHelper;
 using BankEase.Data;
 using BankEase.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace BankEase.Services;
 
 public class TransactionService(DatabaseContext context)
 {
     #region Publics
-    public async Task<Account?> GetAccountById(int accountId)
-    {
-        return await context.Accounts.FirstOrDefaultAsync(account => account.Id == accountId);
-    }
-
-    public async Task<Account?> GetAccountByIBAN(string iban)
-    {
-        iban = iban.Replace(" ", "");
-        return await context.Accounts.FirstOrDefaultAsync(account => account.IBAN == iban);
-    }
-
     public bool HasSufficientFunds(Account account, decimal amount)
     {
         return account.Balance - amount >= -account.Overdraft;

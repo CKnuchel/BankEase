@@ -34,6 +34,7 @@ namespace BankEase.Test.Controller.Transaction
         private ValidationService _validationService = null!;
         private SessionService _sessionService = null!;
         private TransactionService _transactionService = null!;
+        private AccountService _accountService = null!;
         #endregion
 
         #region Initialize and Cleanup
@@ -60,12 +61,13 @@ namespace BankEase.Test.Controller.Transaction
             // Services initialisieren
             _sessionService = new SessionService(mockHttpContextAccessor.Object);
             _transactionService = new TransactionService(_inMemoryContext);
+            _accountService = new AccountService(_inMemoryContext);
 
             mockHttpContext.Setup(s => s.Session).Returns(_mockSession);
             mockHttpContextAccessor.Setup(s => s.HttpContext).Returns(mockHttpContext.Object);
 
             // Controller initialisieren
-            _controller = new TransactionController(_inMemoryContext, _validationService, _sessionService, _transactionService)
+            _controller = new TransactionController(_inMemoryContext, _validationService, _sessionService, _transactionService, _accountService)
                           {
                               ControllerContext = new ControllerContext
                                                   {

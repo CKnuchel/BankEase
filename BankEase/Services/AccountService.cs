@@ -19,5 +19,16 @@ public class AccountService(DatabaseContext context)
         return await context.Customers
                             .FirstOrDefaultAsync(customer => customer.Id == customerId);
     }
+
+    public async Task<Account?> GetAccountById(int accountId)
+    {
+        return await context.Accounts.FirstOrDefaultAsync(account => account.Id == accountId);
+    }
+
+    public async Task<Account?> GetAccountByIBAN(string iban)
+    {
+        iban = iban.Replace(" ", "");
+        return await context.Accounts.FirstOrDefaultAsync(account => account.IBAN == iban);
+    }
     #endregion
 }

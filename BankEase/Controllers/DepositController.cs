@@ -15,6 +15,7 @@ namespace BankEase.Controllers
         private readonly SessionService _sessionService = new(httpContextAccessor);
         private readonly TransactionService _transactionService = new(context);
         private readonly ValidationService _validationService = new();
+        private readonly AccountService _accountService = new(context);
         #endregion
 
         #region Publics
@@ -25,7 +26,7 @@ namespace BankEase.Controllers
                 return RedirectToHomeOrAccount(userId);
 
             // Kontodetails laden
-            Account? account = await _transactionService.GetAccountById(accountId!.Value);
+            Account? account = await _accountService.GetAccountById(accountId!.Value);
             if(account == null) return RedirectToAction("Index", "Account");
 
             AccountViewModel viewModel = new(this.HttpContext, context) { CurrentSaldo = account.Balance };
@@ -46,7 +47,7 @@ namespace BankEase.Controllers
                 if(!_sessionService.IsAccountSessionValid(out int? nUserId, out int? nAccountId))
                     return RedirectToAction("Index", "Account");
 
-                Account? account = await _transactionService.GetAccountById(nAccountId!.Value);
+                Account? account = await _accountService.GetAccountById(nAccountId!.Value);
                 if(account == null)
                     return CreateErrorMessage(DepositMessages.AccountNotFound);
 

@@ -17,6 +17,7 @@ public class TransactionServiceTests
     #region Fields
     private DatabaseContext _inMemoryContext = null!;
     private TransactionService _transactionService = null!;
+    private AccountService _accountService = null!;
     #endregion
 
     #region Initialize and Cleanup
@@ -33,6 +34,7 @@ public class TransactionServiceTests
         _inMemoryContext.Database.EnsureCreated();
 
         _transactionService = new TransactionService(_inMemoryContext);
+        _accountService = new AccountService(_inMemoryContext);
         AddTestData();
     }
 
@@ -49,7 +51,7 @@ public class TransactionServiceTests
     public async Task GetAccountById_ReturnsAccount_WhenAccountExists()
     {
         // Act
-        Account? account = await _transactionService.GetAccountById(1);
+        Account? account = await _accountService.GetAccountById(1);
 
         // Assert
         Assert.IsNotNull(account);
@@ -61,7 +63,7 @@ public class TransactionServiceTests
     public async Task GetAccountById_ReturnsNull_WhenAccountDoesNotExist()
     {
         // Act
-        Account? account = await _transactionService.GetAccountById(999);
+        Account? account = await _accountService.GetAccountById(999);
 
         // Assert
         Assert.IsNull(account);
@@ -71,7 +73,7 @@ public class TransactionServiceTests
     public async Task GetAccountByIBAN_ReturnsAccount_WhenIBANExists()
     {
         // Act
-        Account? account = await _transactionService.GetAccountByIBAN(VALID_SENDER_IBAN);
+        Account? account = await _accountService.GetAccountByIBAN(VALID_SENDER_IBAN);
 
         // Assert
         Assert.IsNotNull(account);
@@ -82,7 +84,7 @@ public class TransactionServiceTests
     public async Task GetAccountByIBAN_ReturnsNull_WhenIBANDoesNotExist()
     {
         // Act
-        Account? account = await _transactionService.GetAccountByIBAN("CH0000000000000000000");
+        Account? account = await _accountService.GetAccountByIBAN("CH0000000000000000000");
 
         // Assert
         Assert.IsNull(account);
@@ -145,7 +147,7 @@ public class TransactionServiceTests
     public async Task DepositAsync_IncreasesBalanceCorrectly()
     {
         // Arrange
-        Account? account = await _transactionService.GetAccountById(1);
+        Account? account = await _accountService.GetAccountById(1);
         decimal initialBalance = account!.Balance;
         const decimal depositAmount = 200m;
 
@@ -161,7 +163,7 @@ public class TransactionServiceTests
     public async Task DepositAsync_CreatesTransactionRecord()
     {
         // Arrange
-        Account? account = await _transactionService.GetAccountById(1);
+        Account? account = await _accountService.GetAccountById(1);
         int initialTransactionCount = _inMemoryContext.TransactionRecords.Count();
         const decimal depositAmount = 150m;
 
@@ -183,7 +185,7 @@ public class TransactionServiceTests
     public async Task WithdrawAsync_DecreasesBalanceCorrectly()
     {
         // Arrange
-        Account account = await _transactionService.GetAccountById(1);
+        Account account = await _accountService.GetAccountById(1);
         decimal initialBalance = account!.Balance;
         decimal withdrawAmount = 200m;
 
@@ -199,7 +201,7 @@ public class TransactionServiceTests
     public async Task WithdrawAsync_CreatesTransactionRecord()
     {
         // Arrange
-        Account? account = await _transactionService.GetAccountById(1);
+        Account? account = await _accountService.GetAccountById(1);
         int initialTransactionCount = _inMemoryContext.TransactionRecords.Count();
         const decimal withdrawAmount = 150m;
 
@@ -221,7 +223,7 @@ public class TransactionServiceTests
     public async Task WithdrawAsync_ReturnsUpdatedBalance_AfterTransaction()
     {
         // Arrange
-        Account? account = await _transactionService.GetAccountById(1);
+        Account? account = await _accountService.GetAccountById(1);
         decimal initialBalance = account!.Balance;
         const decimal withdrawAmount = 100m;
 
