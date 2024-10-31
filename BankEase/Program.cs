@@ -14,6 +14,7 @@ builder.Services.AddSession(options => { options.IdleTimeout = TimeSpan.FromMinu
 builder.Services.AddScoped<ValidationService>();
 builder.Services.AddScoped<SessionService>();
 builder.Services.AddScoped<TransactionService>();
+builder.Services.AddScoped<AccountService>();
 
 builder.Services.AddHttpContextAccessor();
 

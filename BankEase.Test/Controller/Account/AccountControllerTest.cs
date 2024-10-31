@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Moq;
 
 namespace BankEase.Test.Controller.Account
@@ -20,8 +21,8 @@ namespace BankEase.Test.Controller.Account
         #endregion
 
         #region Fields
-        private DatabaseContext _inMemoryContext = null!;
         private AccountController _controller = null!;
+        private DatabaseContext _inMemoryContext = null!;
         private MockSession _mockSession = null!;
         #endregion
 
@@ -30,22 +31,30 @@ namespace BankEase.Test.Controller.Account
         public void TestInitialize()
         {
             DbContextOptions<DatabaseContext> options = new DbContextOptionsBuilder<DatabaseContext>()
-                                                        .UseInMemoryDatabase(databaseName: "TestDatabase")
+                                                        .UseSqlite("DataSource=:memory:")
+                                                        .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
                                                         .Options;
+
             _inMemoryContext = new DatabaseContext(options);
+            _inMemoryContext.Database.OpenConnection();
+            _inMemoryContext.Database.EnsureCreated();
 
             _mockSession = new MockSession();
 
-            Mock<HttpContext> mockHttpContext = new Mock<HttpContext>();
+            Mock<IHttpContextAccessor> mockHttpContextAccessor = new();
+            Mock<HttpContext> mockHttpContext = new();
+
             mockHttpContext.Setup(s => s.Session).Returns(_mockSession);
 
-            _controller = new AccountController(_inMemoryContext)
-            {
-                ControllerContext = new ControllerContext
-                {
-                    HttpContext = mockHttpContext.Object
-                }
-            };
+            mockHttpContextAccessor.Setup(s => s.HttpContext).Returns(mockHttpContext.Object);
+
+            _controller = new AccountController(_inMemoryContext, mockHttpContextAccessor.Object)
+                          {
+                              ControllerContext = new ControllerContext
+                                                  {
+                                                      HttpContext = mockHttpContext.Object
+                                                  }
+                          };
 
             AddTestData();
         }
@@ -63,8 +72,10 @@ namespace BankEase.Test.Controller.Account
         public async Task Index_ReturnsViewWithAccountOptions_WhenUserIdIsProvided()
         {
             // Arrange
-            const int nUserId = 1;
-            _mockSession.SetInt32(SessionKey.USER_ID, nUserId);
+            const int userId = 1;
+            const int accountId = 1;
+            _mockSession.SetInt32(SessionKey.USER_ID, userId);
+            _mockSession.SetInt32(SessionKey.ACCOUNT_ID, accountId);
 
             // Act
             ViewResult? result = await _controller.Index() as ViewResult;
@@ -158,7 +169,7 @@ namespace BankEase.Test.Controller.Account
         {
             List<Customer> customers =
             [
-                new Customer
+                new()
                 {
                     Id = 1,
                     FirstName = "Max",
@@ -170,7 +181,7 @@ namespace BankEase.Test.Controller.Account
                     ZipCode = 3000
                 },
 
-                new Customer
+                new()
                 {
                     Id = 2,
                     FirstName = "Mina",

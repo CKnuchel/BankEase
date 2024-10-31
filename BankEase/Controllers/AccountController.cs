@@ -2,28 +2,31 @@
 using BankEase.Common.Messages.AccountMessages;
 using BankEase.Data;
 using BankEase.Models;
+using BankEase.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 
 namespace BankEase.Controllers
 {
-    public class AccountController(DatabaseContext context) : Controller
+    public class AccountController(DatabaseContext context, IHttpContextAccessor httpContextAccessor) : Controller
     {
         #region Fields
-        private readonly DatabaseContext _context = context;
+        private readonly SessionService _sessionService = new(httpContextAccessor);
+        private readonly AccountService _accountService = new(context);
         #endregion
 
         #region Publics
         public async Task<IActionResult> Index()
         {
-            int? nUserId = this.HttpContext.Session.GetInt32(SessionKey.USER_ID);
+            // Benutzer-ID in der Sitzung validieren
+            if(!_sessionService.IsUserSessionValid(out int? userId, out _))
+                return RedirectToAction("Index", "Home");
 
-            if(nUserId is null) return RedirectToAction("Index", "Home");
+            // Benutzerkonten abrufen
+            List<Account> userAccounts = await _accountService.GetAccountsByCustomerId(userId!.Value);
 
-            List<Account> userAccounts = await _context.Accounts.Where(account => account.CustomerId == nUserId).ToListAsync();
-
-            Customer? customer = await _context.Customers.FindAsync(nUserId);
+            // Kundeninformation für die Anzeige laden
+            Customer? customer = await _accountService.GetCustomerById(userId.Value);
 
             this.ViewBag.CustomerFirstName = customer == null ? string.Empty : customer.FirstName;
 

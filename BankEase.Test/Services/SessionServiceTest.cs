@@ -22,7 +22,7 @@ namespace BankEase.Test.Services
             _mockSession = new MockSession();
             _sessionService = new SessionService(_httpContextAccessorMock.Object);
 
-            // Mock HttpContext, sodass es unsere MockSession zurückgibt
+            // Mock HttpContext, sodass es eine MockSession zurückgibt
             Mock<HttpContext> httpContextMock = new Mock<HttpContext>();
             httpContextMock.Setup(context => context.Session).Returns(_mockSession);
             _httpContextAccessorMock.Setup(accessor => accessor.HttpContext).Returns(httpContextMock.Object);
