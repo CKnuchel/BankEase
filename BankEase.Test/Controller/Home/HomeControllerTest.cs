@@ -33,14 +33,14 @@ namespace BankEase.Test.Controller.Home
             _mockSession = new MockSession();
 
             // HttpContext-Setup für den Controller
-            Mock<HttpContext> mockHttpContext = new Mock<HttpContext>();
+            Mock<HttpContext> mockHttpContext = new();
             Mock<IHttpContextAccessor> mockHttpContextAccessor = new();
 
             mockHttpContext.Setup(s => s.Session).Returns(_mockSession);
             mockHttpContextAccessor.Setup(s => s.HttpContext).Returns(mockHttpContext.Object);
 
             // Controller initialisieren
-            _controller = new HomeController(_inMemoryContext, mockHttpContextAccessor.Object)
+            _controller = new HomeController(_inMemoryContext)
                           {
                               ControllerContext = new ControllerContext
                                                   {

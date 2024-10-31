@@ -1,19 +1,14 @@
 using BankEase.Common;
 using BankEase.Data;
 using BankEase.Models;
-using BankEase.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace BankEase.Controllers
 {
-    public class HomeController(DatabaseContext context, IHttpContextAccessor httpContextAccessor) : Controller
+    public class HomeController(DatabaseContext context) : Controller
     {
-        #region Fields
-        private readonly SessionService _sessionService = new(httpContextAccessor);
-        #endregion
-
         #region Publics
         public async Task<IActionResult> Index()
         {
@@ -37,8 +32,8 @@ namespace BankEase.Controllers
         [HttpPost]
         public IActionResult Login(int? nUserId)
         {
-            // Benutzer-ID in der Sitzung validieren
-            if(!_sessionService.IsUserSessionValid(out _))
+            // Benutzer-ID validieren
+            if(nUserId is null or 0)
             {
                 this.ModelState.AddModelError("user", HomeMessages.LoginUserNotSelected);
                 return RedirectToAction("Index");
