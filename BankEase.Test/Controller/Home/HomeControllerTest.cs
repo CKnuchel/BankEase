@@ -34,16 +34,19 @@ namespace BankEase.Test.Controller.Home
 
             // HttpContext-Setup für den Controller
             Mock<HttpContext> mockHttpContext = new Mock<HttpContext>();
+            Mock<IHttpContextAccessor> mockHttpContextAccessor = new();
+
             mockHttpContext.Setup(s => s.Session).Returns(_mockSession);
+            mockHttpContextAccessor.Setup(s => s.HttpContext).Returns(mockHttpContext.Object);
 
             // Controller initialisieren
-            _controller = new HomeController(_inMemoryContext)
-            {
-                ControllerContext = new ControllerContext
-                {
-                    HttpContext = mockHttpContext.Object
-                }
-            };
+            _controller = new HomeController(_inMemoryContext, mockHttpContextAccessor.Object)
+                          {
+                              ControllerContext = new ControllerContext
+                                                  {
+                                                      HttpContext = mockHttpContext.Object
+                                                  }
+                          };
 
             AddTestData();
         }
@@ -81,6 +84,7 @@ namespace BankEase.Test.Controller.Home
         {
             // Arrange
             const int nValidUserId = 1;
+            _mockSession.SetInt32(SessionKey.USER_ID, nValidUserId);
 
             // Act
             RedirectToActionResult? result = _controller.Login(nValidUserId) as RedirectToActionResult;
