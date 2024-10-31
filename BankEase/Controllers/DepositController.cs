@@ -22,11 +22,11 @@ namespace BankEase.Controllers
         public async Task<IActionResult> Index()
         {
             // Sitzungsvalidierung
-            if(!_sessionService.IsAccountSessionValid(out int? userId, out int? accountId))
-                return RedirectToHomeOrAccount(userId);
+            if(!_sessionService.IsAccountSessionValid(out int? nUserId, out int? nAccountId))
+                return RedirectToHomeOrAccount(nUserId);
 
             // Kontodetails laden
-            Account? account = await _accountService.GetAccountById(accountId!.Value);
+            Account? account = await _accountService.GetAccountById(nAccountId!.Value);
             if(account == null) return RedirectToAction("Index", "Account");
 
             AccountViewModel viewModel = new(this.HttpContext, context) { CurrentSaldo = account.Balance };
@@ -37,25 +37,24 @@ namespace BankEase.Controllers
         public async Task<IActionResult> Deposit(decimal mAmount)
         {
             // Betragsvalidierung
-            if(!_validationService.IsAmountValid(mAmount, out string? amountErrorMessage))
-                return CreateErrorMessage(amountErrorMessage!);
+            if(!_validationService.IsAmountValid(mAmount, out string? strAmountErrorMessage))
+                return CreateErrorMessage(strAmountErrorMessage!);
 
             await using IDbContextTransaction transaction = await context.Database.BeginTransactionAsync();
             try
             {
                 // Sitzungsvalidierung
-                if(!_sessionService.IsAccountSessionValid(out int? nUserId, out int? nAccountId))
+                if(!_sessionService.IsAccountSessionValid(out _, out int? nAccountId))
                     return RedirectToAction("Index", "Account");
 
                 Account? account = await _accountService.GetAccountById(nAccountId!.Value);
-                if(account == null)
-                    return CreateErrorMessage(DepositMessages.AccountNotFound);
+                if(account == null) return CreateErrorMessage(DepositMessages.AccountNotFound);
 
                 // Transaktion ausführen
-                decimal updatedBalance = await _transactionService.DepositAsync(account, mAmount);
+                decimal mUpdatedBalance = await _transactionService.DepositAsync(account, mAmount);
                 await transaction.CommitAsync();
 
-                _accountViewModel.CurrentSaldo = updatedBalance;
+                _accountViewModel.CurrentSaldo = mUpdatedBalance;
                 return CreateSuccessMessage(DepositMessages.DepositSuccessful);
             }
             catch(Exception)
@@ -65,31 +64,29 @@ namespace BankEase.Controllers
                     await transaction.RollbackAsync();
                 }
 
-                AccountViewModel errorViewModel = await _accountViewModel.WithMessage(DepositMessages.DepositFailed, isErrorMessage: true);
+                AccountViewModel errorViewModel = await _accountViewModel.WithMessage(DepositMessages.DepositFailed, bIsErrorMessage: true);
                 return View("Index", errorViewModel);
             }
         }
         #endregion
 
-        #region Privates
-        private IActionResult RedirectToHomeOrAccount(int? userId)
+        private protected IActionResult RedirectToHomeOrAccount(int? nUserId)
         {
-            return userId is null or 0 ? RedirectToAction("Index", "Home") : RedirectToAction("Index", "Account");
+            return nUserId is null or 0 ? RedirectToAction("Index", "Home") : RedirectToAction("Index", "Account");
         }
 
-        private IActionResult CreateErrorMessage(string message)
+        private protected IActionResult CreateErrorMessage(string strErrorMessage)
         {
-            _accountViewModel.ErrorMessage = message;
+            _accountViewModel.ErrorMessage = strErrorMessage;
             _accountViewModel.SuccessMessage = null;
             return View("Index", _accountViewModel);
         }
 
-        private IActionResult CreateSuccessMessage(string message)
+        private protected IActionResult CreateSuccessMessage(string strSuccessMessage)
         {
-            _accountViewModel.SuccessMessage = message;
+            _accountViewModel.SuccessMessage = strSuccessMessage;
             _accountViewModel.ErrorMessage = null;
             return View("Index", _accountViewModel);
         }
-        #endregion
     }
 }

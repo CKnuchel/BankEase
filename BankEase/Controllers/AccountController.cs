@@ -1,5 +1,4 @@
 ﻿using BankEase.Common;
-using BankEase.Common.Messages.AccountMessages;
 using BankEase.Data;
 using BankEase.Models;
 using BankEase.Services;
@@ -19,14 +18,14 @@ namespace BankEase.Controllers
         public async Task<IActionResult> Index()
         {
             // Benutzer-ID in der Sitzung validieren
-            if(!_sessionService.IsUserSessionValid(out int? userId))
+            if(!_sessionService.IsUserSessionValid(out int? nUserId))
                 return RedirectToAction("Index", "Home");
 
             // Benutzerkonten abrufen
-            List<Account> userAccounts = await _accountService.GetAccountsByCustomerId(userId!.Value);
+            List<Account> userAccounts = await _accountService.GetAccountsByCustomerId(nUserId!.Value);
 
             // Kundeninformation für die Anzeige laden
-            Customer? customer = await _accountService.GetCustomerById(userId.Value);
+            Customer? customer = await _accountService.GetCustomerById(nUserId.Value);
 
             this.ViewBag.CustomerFirstName = customer == null ? string.Empty : customer.FirstName;
 

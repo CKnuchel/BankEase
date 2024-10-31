@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-public class MockSession : ISession
+/// <inheritdoc />
+internal class MockSession : ISession
 {
     #region Fields
-    private readonly Dictionary<string, byte[]> _sessionStorage = new Dictionary<string, byte[]>();
+    private readonly Dictionary<string, byte[]?> _sessionStorage = new();
     #endregion
 
     #region Properties
-    public string Id { get; } = "mock_session_id";
-    public bool IsAvailable { get; } = true;
+    public string Id => "mock_session_id";
+    public bool IsAvailable => true;
     public IEnumerable<string> Keys => _sessionStorage.Keys;
     #endregion
 
@@ -28,21 +29,21 @@ public class MockSession : ISession
         return Task.CompletedTask;
     }
 
-    public void Remove(string key)
+    public void Remove(string strKey)
     {
-        _sessionStorage.Remove(key);
+        _sessionStorage.Remove(strKey);
     }
 
-    public void Set(string key, byte[] value)
+    public void Set(string strKey, byte[]? value)
     {
-        _sessionStorage[key] = value;
+        _sessionStorage[strKey] = value;
     }
 
-    public bool TryGetValue(string key, out byte[] value)
+    public bool TryGetValue(string strKey, out byte[] value)
     {
-        if(_sessionStorage.TryGetValue(key, out byte[]? objValue))
+        if(_sessionStorage.TryGetValue(strKey, out byte[]? objValue))
         {
-            value = objValue;
+            value = objValue!;
             return true;
         }
 
@@ -50,7 +51,7 @@ public class MockSession : ISession
         return false;
     }
 
-    public void SetInt32(string key, int value)
+    public void SetInt32(string strKey, int value)
     {
         byte[] bytes = BitConverter.GetBytes(value);
         if(BitConverter.IsLittleEndian)
@@ -58,22 +59,19 @@ public class MockSession : ISession
             Array.Reverse(bytes);
         }
 
-        _sessionStorage[key] = bytes;
+        _sessionStorage[strKey] = bytes;
     }
 
-    public int? GetInt32(string key)
+    public int? GetInt32(string strKey)
     {
-        if(_sessionStorage.TryGetValue(key, out byte[] bytes) && bytes.Length == 4)
-        {
-            if(BitConverter.IsLittleEndian)
-            {
-                Array.Reverse(bytes);
-            }
+        if(!_sessionStorage.TryGetValue(strKey, out byte[]? bytes) || bytes!.Length != 4) return null;
 
-            return BitConverter.ToInt32(bytes, 0);
+        if(BitConverter.IsLittleEndian)
+        {
+            Array.Reverse(bytes);
         }
 
-        return null;
+        return BitConverter.ToInt32(bytes, 0);
     }
     #endregion
 }

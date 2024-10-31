@@ -1,4 +1,4 @@
-﻿using BankEase.Common.TransactionHelper;
+﻿using BankEase.Common;
 using BankEase.Data;
 using BankEase.Models;
 using BankEase.Services;
@@ -97,10 +97,10 @@ public class TransactionServiceTests
         Account account = _inMemoryContext.Accounts.First();
 
         // Act
-        bool result = _transactionService.HasSufficientFunds(account, 500m);
+        bool bResult = _transactionService.HasSufficientFunds(account, 500m);
 
         // Assert
-        Assert.IsTrue(result);
+        Assert.IsTrue(bResult);
     }
 
     [TestMethod]
@@ -110,10 +110,10 @@ public class TransactionServiceTests
         Account account = _inMemoryContext.Accounts.First();
 
         // Act
-        bool result = _transactionService.HasSufficientFunds(account, 2000m);
+        bool bResult = _transactionService.HasSufficientFunds(account, 2000m);
 
         // Assert
-        Assert.IsFalse(result);
+        Assert.IsFalse(bResult);
     }
 
     [TestMethod]
@@ -121,7 +121,7 @@ public class TransactionServiceTests
     {
         // Arrange
         Account senderAccount = _inMemoryContext.Accounts.Include(account => account.Customer).First(a => a.IBAN == VALID_SENDER_IBAN);
-        Account receiverAccount = new Account
+        Account receiverAccount = new()
                                   {
                                       Id = 2,
                                       CustomerId = 1,
@@ -135,12 +135,12 @@ public class TransactionServiceTests
         await _inMemoryContext.SaveChangesAsync();
 
         // Act
-        decimal updatedBalance = await _transactionService.ExecuteTransactionAsync(senderAccount, receiverAccount, 300m);
+        decimal mUpdatedBalance = await _transactionService.ExecuteTransactionAsync(senderAccount, receiverAccount, 300m);
 
         // Assert
         Assert.AreEqual(700m, senderAccount.Balance);
         Assert.AreEqual(400m, receiverAccount.Balance);
-        Assert.AreEqual(700m, updatedBalance);
+        Assert.AreEqual(700m, mUpdatedBalance);
     }
 
     [TestMethod]
@@ -148,15 +148,15 @@ public class TransactionServiceTests
     {
         // Arrange
         Account? account = await _accountService.GetAccountById(1);
-        decimal initialBalance = account!.Balance;
-        const decimal depositAmount = 200m;
+        decimal mInitialBalance = account!.Balance;
+        const decimal mDepositAmount = 200m;
 
         // Act
-        decimal updatedBalance = await _transactionService.DepositAsync(account, depositAmount);
+        decimal mUpdatedBalance = await _transactionService.DepositAsync(account, mDepositAmount);
 
         // Assert
-        Assert.AreEqual(initialBalance + depositAmount, updatedBalance);
-        Assert.AreEqual(updatedBalance, account.Balance);
+        Assert.AreEqual(mInitialBalance + mDepositAmount, mUpdatedBalance);
+        Assert.AreEqual(mUpdatedBalance, account.Balance);
     }
 
     [TestMethod]
@@ -164,20 +164,20 @@ public class TransactionServiceTests
     {
         // Arrange
         Account? account = await _accountService.GetAccountById(1);
-        int initialTransactionCount = _inMemoryContext.TransactionRecords.Count();
-        const decimal depositAmount = 150m;
+        int nInitialTransactionCount = _inMemoryContext.TransactionRecords.Count();
+        const decimal mDepositAmount = 150m;
 
         // Act
-        await _transactionService.DepositAsync(account!, depositAmount);
-        int finalTransactionCount = _inMemoryContext.TransactionRecords.Count();
+        await _transactionService.DepositAsync(account!, mDepositAmount);
+        int nFinalTransactionCount = _inMemoryContext.TransactionRecords.Count();
 
         // Assert
-        Assert.AreEqual(initialTransactionCount + 1, finalTransactionCount);
+        Assert.AreEqual(nInitialTransactionCount + 1, nFinalTransactionCount);
 
         TransactionRecord transactionRecord = _inMemoryContext.TransactionRecords.OrderBy(tr => tr.TransactionTime).Last();
         Assert.IsNotNull(account);
         Assert.AreEqual(account.Id, transactionRecord.AccountId);
-        Assert.AreEqual(depositAmount, transactionRecord.Amount);
+        Assert.AreEqual(mDepositAmount, transactionRecord.Amount);
         Assert.AreEqual(TransactionType.Deposit, transactionRecord.Type);
     }
 
@@ -185,16 +185,16 @@ public class TransactionServiceTests
     public async Task WithdrawAsync_DecreasesBalanceCorrectly()
     {
         // Arrange
-        Account account = await _accountService.GetAccountById(1);
-        decimal initialBalance = account!.Balance;
-        decimal withdrawAmount = 200m;
+        Account? account = await _accountService.GetAccountById(1);
+        decimal mInitialBalance = account!.Balance;
+        const decimal mWithdrawAmount = 200m;
 
         // Act
-        decimal updatedBalance = await _transactionService.WithdrawAsync(account, withdrawAmount);
+        decimal mUpdatedBalance = await _transactionService.WithdrawAsync(account, mWithdrawAmount);
 
         // Assert
-        Assert.AreEqual(initialBalance - withdrawAmount, updatedBalance);
-        Assert.AreEqual(updatedBalance, account.Balance);
+        Assert.AreEqual(mInitialBalance - mWithdrawAmount, mUpdatedBalance);
+        Assert.AreEqual(mUpdatedBalance, account.Balance);
     }
 
     [TestMethod]
@@ -202,20 +202,20 @@ public class TransactionServiceTests
     {
         // Arrange
         Account? account = await _accountService.GetAccountById(1);
-        int initialTransactionCount = _inMemoryContext.TransactionRecords.Count();
-        const decimal withdrawAmount = 150m;
+        int nInitialTransactionCount = _inMemoryContext.TransactionRecords.Count();
+        const decimal mWithdrawAmount = 150m;
 
         // Act
-        await _transactionService.WithdrawAsync(account!, withdrawAmount);
-        int finalTransactionCount = _inMemoryContext.TransactionRecords.Count();
+        await _transactionService.WithdrawAsync(account!, mWithdrawAmount);
+        int nFinalTransactionCount = _inMemoryContext.TransactionRecords.Count();
 
         // Assert
-        Assert.AreEqual(initialTransactionCount + 1, finalTransactionCount);
+        Assert.AreEqual(nInitialTransactionCount + 1, nFinalTransactionCount);
 
         TransactionRecord transactionRecord = _inMemoryContext.TransactionRecords.OrderBy(tr => tr.TransactionTime).Last();
         Assert.IsNotNull(account);
         Assert.AreEqual(account.Id, transactionRecord.AccountId);
-        Assert.AreEqual(withdrawAmount, transactionRecord.Amount);
+        Assert.AreEqual(mWithdrawAmount, transactionRecord.Amount);
         Assert.AreEqual(TransactionType.Withdraw, transactionRecord.Type);
     }
 
@@ -224,21 +224,21 @@ public class TransactionServiceTests
     {
         // Arrange
         Account? account = await _accountService.GetAccountById(1);
-        decimal initialBalance = account!.Balance;
-        const decimal withdrawAmount = 100m;
+        decimal mInitialBalance = account!.Balance;
+        const decimal mWithdrawAmount = 100m;
 
         // Act
-        decimal updatedBalance = await _transactionService.WithdrawAsync(account, withdrawAmount);
+        decimal mUpdatedBalance = await _transactionService.WithdrawAsync(account, mWithdrawAmount);
 
         // Assert
-        Assert.AreEqual(initialBalance - withdrawAmount, updatedBalance);
+        Assert.AreEqual(mInitialBalance - mWithdrawAmount, mUpdatedBalance);
     }
     #endregion
 
     #region Privates
     private void AddTestData()
     {
-        Customer customer = new Customer
+        Customer customer = new()
                             {
                                 Id = 1,
                                 FirstName = "Max",
@@ -250,7 +250,7 @@ public class TransactionServiceTests
                                 ZipCode = 3000
                             };
 
-        Account account = new Account
+        Account account = new()
                           {
                               Id = 1,
                               CustomerId = 1,

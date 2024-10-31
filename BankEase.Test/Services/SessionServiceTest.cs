@@ -9,9 +9,9 @@ namespace BankEase.Test.Services
     public class SessionServiceTests
     {
         #region Fields
-        private Mock<IHttpContextAccessor> _httpContextAccessorMock;
-        private MockSession _mockSession;
-        private SessionService _sessionService;
+        private Mock<IHttpContextAccessor> _httpContextAccessorMock = null!;
+        private MockSession _mockSession = null!;
+        private SessionService _sessionService = null!;
         #endregion
 
         #region Initialize and Cleanup
@@ -23,7 +23,7 @@ namespace BankEase.Test.Services
             _sessionService = new SessionService(_httpContextAccessorMock.Object);
 
             // Mock HttpContext, sodass es eine MockSession zurückgibt
-            Mock<HttpContext> httpContextMock = new Mock<HttpContext>();
+            Mock<HttpContext> httpContextMock = new();
             httpContextMock.Setup(context => context.Session).Returns(_mockSession);
             _httpContextAccessorMock.Setup(accessor => accessor.HttpContext).Returns(httpContextMock.Object);
         }
@@ -38,12 +38,12 @@ namespace BankEase.Test.Services
             _mockSession.SetInt32(SessionKey.ACCOUNT_ID, 2);
 
             // Act
-            bool result = _sessionService.IsAccountSessionValid(out int? userId, out int? accountId);
+            bool bResult = _sessionService.IsAccountSessionValid(out int? nUserId, out int? nAccountId);
 
             // Assert
-            Assert.IsTrue(result);
-            Assert.AreEqual(1, userId);
-            Assert.AreEqual(2, accountId);
+            Assert.IsTrue(bResult);
+            Assert.AreEqual(1, nUserId);
+            Assert.AreEqual(2, nAccountId);
         }
 
         [TestMethod]
@@ -53,12 +53,12 @@ namespace BankEase.Test.Services
             _mockSession.SetInt32(SessionKey.ACCOUNT_ID, 2);
 
             // Act
-            bool result = _sessionService.IsAccountSessionValid(out int? userId, out int? accountId);
+            bool bResult = _sessionService.IsAccountSessionValid(out int? nUserId, out int? nAccountId);
 
             // Assert
-            Assert.IsFalse(result);
-            Assert.IsNull(userId);
-            Assert.AreEqual(2, accountId);
+            Assert.IsFalse(bResult);
+            Assert.IsNull(nUserId);
+            Assert.AreEqual(2, nAccountId);
         }
 
         [TestMethod]
@@ -68,12 +68,12 @@ namespace BankEase.Test.Services
             _mockSession.SetInt32(SessionKey.USER_ID, 1);
 
             // Act
-            bool result = _sessionService.IsAccountSessionValid(out int? userId, out int? accountId);
+            bool bResult = _sessionService.IsAccountSessionValid(out int? nUserId, out int? nAccountId);
 
             // Assert
-            Assert.IsFalse(result);
-            Assert.AreEqual(1, userId);
-            Assert.IsNull(accountId);
+            Assert.IsFalse(bResult);
+            Assert.AreEqual(1, nUserId);
+            Assert.IsNull(nAccountId);
         }
 
         [TestMethod]
@@ -84,12 +84,12 @@ namespace BankEase.Test.Services
             _mockSession.SetInt32(SessionKey.ACCOUNT_ID, -1);
 
             // Act
-            bool result = _sessionService.IsAccountSessionValid(out int? userId, out int? accountId);
+            bool bResult = _sessionService.IsAccountSessionValid(out int? nUserId, out int? nAccountId);
 
             // Assert
-            Assert.IsFalse(result);
-            Assert.AreEqual(0, userId);
-            Assert.AreEqual(-1, accountId);
+            Assert.IsFalse(bResult);
+            Assert.AreEqual(0, nUserId);
+            Assert.AreEqual(-1, nAccountId);
         }
 
         [TestMethod]
@@ -100,22 +100,22 @@ namespace BankEase.Test.Services
             _mockSession.SetInt32(SessionKey.ACCOUNT_ID, 1);
 
             // Act
-            bool result = _sessionService.IsAccountSessionValid(out int? _, out int? accountId);
+            bool bResult = _sessionService.IsAccountSessionValid(out _, out int? nAccountId);
 
             // Assert
-            Assert.IsTrue(result);
-            Assert.AreEqual(1, accountId);
+            Assert.IsTrue(bResult);
+            Assert.AreEqual(1, nAccountId);
         }
 
         [TestMethod]
         public void IsAccountSessionValid_ReturnsFalse_WhenAccountIdIsMissing()
         {
             // Act
-            bool result = _sessionService.IsAccountSessionValid(out int? _, out int? accountId);
+            bool bResult = _sessionService.IsAccountSessionValid(out _, out int? nAccountId);
 
             // Assert
-            Assert.IsFalse(result);
-            Assert.IsNull(accountId);
+            Assert.IsFalse(bResult);
+            Assert.IsNull(nAccountId);
         }
 
         [TestMethod]
@@ -125,11 +125,11 @@ namespace BankEase.Test.Services
             _mockSession.SetInt32(SessionKey.ACCOUNT_ID, 0);
 
             // Act
-            bool result = _sessionService.IsAccountSessionValid(out int? _, out int? accountId);
+            bool bResult = _sessionService.IsAccountSessionValid(out _, out int? nAccountId);
 
             // Assert
-            Assert.IsFalse(result);
-            Assert.AreEqual(0, accountId);
+            Assert.IsFalse(bResult);
+            Assert.AreEqual(0, nAccountId);
         }
 
         [TestMethod]
@@ -139,12 +139,12 @@ namespace BankEase.Test.Services
             _httpContextAccessorMock.Setup(accessor => accessor.HttpContext).Returns(null as HttpContext);
 
             // Act
-            bool result = _sessionService.IsAccountSessionValid(out int? userId, out int? accountId);
+            bool bResult = _sessionService.IsAccountSessionValid(out int? nUserId, out int? nAccountId);
 
             // Assert
-            Assert.IsFalse(result);
-            Assert.IsNull(userId);
-            Assert.IsNull(accountId);
+            Assert.IsFalse(bResult);
+            Assert.IsNull(nUserId);
+            Assert.IsNull(nAccountId);
         }
         #endregion
     }

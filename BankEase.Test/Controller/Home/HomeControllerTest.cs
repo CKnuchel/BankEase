@@ -95,9 +95,9 @@ namespace BankEase.Test.Controller.Home
             Assert.AreEqual("Account", result.ControllerName);
 
             // Überprüfe, ob die Session gesetzt wurde
-            int? sessionUserId = _mockSession.GetInt32(SessionKey.USER_ID);
-            Assert.IsNotNull(sessionUserId);
-            Assert.AreEqual(nValidUserId, sessionUserId);
+            int? nSessionUserId = _mockSession.GetInt32(SessionKey.USER_ID);
+            Assert.IsNotNull(nSessionUserId);
+            Assert.AreEqual(nValidUserId, nSessionUserId);
         }
 
         [TestMethod]

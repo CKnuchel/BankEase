@@ -1,4 +1,4 @@
-﻿using BankEase.Common.Messages;
+﻿using BankEase.Common;
 using BankEase.Services;
 
 namespace BankEase.Test.Services;
@@ -23,86 +23,86 @@ public class ValidationServiceTest
     public void IsAmountValid_ReturnsTrue_WhenAmountIsGreaterThanZero()
     {
         // Act
-        bool result = this._validationService.IsAmountValid(100m, out string? errorMessage);
+        bool bResult = this._validationService.IsAmountValid(100m, out string? strErrorMessage);
 
         // Assert
-        Assert.IsTrue(result);
-        Assert.IsNull(errorMessage);
+        Assert.IsTrue(bResult);
+        Assert.IsNull(strErrorMessage);
     }
 
     [TestMethod]
     public void IsAmountValid_ReturnsFalse_WhenAmountIsZero()
     {
         // Act
-        bool result = this._validationService.IsAmountValid(0m, out string? errorMessage);
+        bool bResult = this._validationService.IsAmountValid(0m, out string? strErrorMessage);
 
         // Assert
-        Assert.IsFalse(result);
-        Assert.AreEqual(TransactionMessages.TransferAmountMustBeGreaterThanZero, errorMessage);
+        Assert.IsFalse(bResult);
+        Assert.AreEqual(TransactionMessages.TransferAmountMustBeGreaterThanZero, strErrorMessage);
     }
 
     [TestMethod]
     public void IsAmountValid_ReturnsFalse_WhenAmountIsNegative()
     {
         // Act
-        bool result = this._validationService.IsAmountValid(-50m, out string? errorMessage);
+        bool bResult = this._validationService.IsAmountValid(-50m, out string? strErrorMessage);
 
         // Assert
-        Assert.IsFalse(result);
-        Assert.AreEqual(TransactionMessages.TransferAmountMustBeGreaterThanZero, errorMessage);
+        Assert.IsFalse(bResult);
+        Assert.AreEqual(TransactionMessages.TransferAmountMustBeGreaterThanZero, strErrorMessage);
     }
 
     [TestMethod]
     public void IsIBANValid_ReturnsTrue_WhenIBANIsValid()
     {
         // Arrange
-        string validIban = "CH 3200 5855 8512 3456 01T";
+        const string strValidIBAN = "CH 3200 5855 8512 3456 01T";
 
         // Act
-        bool result = this._validationService.IsIBANValid(validIban, out string? errorMessage);
+        bool bResult = this._validationService.IsIBANValid(strValidIBAN, out string? strErrorMessage);
 
         // Assert
-        Assert.IsTrue(result);
-        Assert.IsNull(errorMessage);
+        Assert.IsTrue(bResult);
+        Assert.IsNull(strErrorMessage);
     }
 
     [TestMethod]
     public void IsIBANValid_ReturnsFalse_WhenIBANIsInvalidFormat()
     {
         // Arrange
-        string invalidIban = "DE 3200 5855 8512 3456 01T"; // Invalid for CH regex
+        const string strInvalidIBAN = "DE 3200 5855 8512 3456 01T"; // Invalid da nicht CH Code
 
         // Act
-        bool result = this._validationService.IsIBANValid(invalidIban, out string? errorMessage);
+        bool bResult = this._validationService.IsIBANValid(strInvalidIBAN, out string? strErrorMessage);
 
         // Assert
-        Assert.IsFalse(result);
-        Assert.AreEqual(TransactionMessages.IBANInvalid, errorMessage);
+        Assert.IsFalse(bResult);
+        Assert.AreEqual(TransactionMessages.IBANInvalid, strErrorMessage);
     }
 
     [TestMethod]
     public void IsIBANValid_ReturnsFalse_WhenIBANIsEmpty()
     {
         // Act
-        bool result = this._validationService.IsIBANValid(string.Empty, out string? errorMessage);
+        bool bResult = this._validationService.IsIBANValid(string.Empty, out string? strErrorMessage);
 
         // Assert
-        Assert.IsFalse(result);
-        Assert.AreEqual(TransactionMessages.IBANInvalid, errorMessage);
+        Assert.IsFalse(bResult);
+        Assert.AreEqual(TransactionMessages.IBANInvalid, strErrorMessage);
     }
 
     [TestMethod]
     public void IsIBANValid_ReturnsFalse_WhenIBANIsTooShort()
     {
         // Arrange
-        string shortIban = "CH93 0076"; // Too short for valid IBAN format
+        const string strShortIBAN = "CH93 0076"; // Too short for valid IBAN format
 
         // Act
-        bool result = this._validationService.IsIBANValid(shortIban, out string? errorMessage);
+        bool bResult = this._validationService.IsIBANValid(strShortIBAN, out string? strErrorMessage);
 
         // Assert
-        Assert.IsFalse(result);
-        Assert.AreEqual(TransactionMessages.IBANInvalid, errorMessage);
+        Assert.IsFalse(bResult);
+        Assert.AreEqual(TransactionMessages.IBANInvalid, strErrorMessage);
     }
     #endregion
 }

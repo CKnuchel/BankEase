@@ -1,5 +1,4 @@
 ﻿using BankEase.Common;
-using BankEase.Common.Messages;
 using BankEase.Controllers;
 using BankEase.Data;
 using BankEase.Models;
@@ -72,10 +71,10 @@ public class WithdrawControllerTest
     public async Task Withdraw_DisplaysError_WhenAmountIsNegative()
     {
         // Arrange
-        const int userId = 1;
-        const int accountId = 1;
-        _mockSession.SetInt32(SessionKey.USER_ID, userId);
-        _mockSession.SetInt32(SessionKey.ACCOUNT_ID, accountId);
+        const int nUserId = 1;
+        const int nAccountId = 1;
+        _mockSession.SetInt32(SessionKey.USER_ID, nUserId);
+        _mockSession.SetInt32(SessionKey.ACCOUNT_ID, nAccountId);
 
         // Act
         ViewResult? result = await _controller.Withdraw(-50m) as ViewResult;
@@ -92,13 +91,13 @@ public class WithdrawControllerTest
     public async Task Withdraw_DisplaysSuccessMessage_WhenAmountIsValid()
     {
         // Arrange
-        const int userId = 1;
-        const int accountId = 1;
+        const int nUserId = 1;
+        const int nAccountId = 1;
 
-        _mockSession.SetInt32(SessionKey.USER_ID, userId);
-        _mockSession.SetInt32(SessionKey.ACCOUNT_ID, accountId);
+        _mockSession.SetInt32(SessionKey.USER_ID, nUserId);
+        _mockSession.SetInt32(SessionKey.ACCOUNT_ID, nAccountId);
 
-        decimal initialBalance = (await _inMemoryContext.Accounts.FindAsync(accountId))?.Balance ?? 0;
+        decimal mInitialBalance = (await _inMemoryContext.Accounts.FindAsync(nAccountId))?.Balance ?? 0;
 
         // Act
         ViewResult? result = await _controller.Withdraw(100m) as ViewResult;
@@ -111,25 +110,25 @@ public class WithdrawControllerTest
         Assert.AreEqual(WithdrawMessages.WithdrawSuccessful, viewModel.SuccessMessage);
 
         // Überprüfe, ob der Kontostand korrekt aktualisiert wurde
-        decimal? updatedBalance = (await _inMemoryContext.Accounts.FindAsync(accountId))?.Balance;
-        Assert.AreEqual(initialBalance - 100m, updatedBalance);
+        decimal? mUpdatedBalance = (await _inMemoryContext.Accounts.FindAsync(nAccountId))?.Balance;
+        Assert.AreEqual(mInitialBalance - 100m, mUpdatedBalance);
     }
 
     [TestMethod]
     public async Task Withdraw_AllowsWithdrawal_UpToLimit()
     {
         // Arrange
-        const int userId = 1;
-        const int accountId = 1;
-        _mockSession.SetInt32(SessionKey.USER_ID, userId);
-        _mockSession.SetInt32(SessionKey.ACCOUNT_ID, accountId);
+        const int nUserId = 1;
+        const int nAccountId = 1;
+        _mockSession.SetInt32(SessionKey.USER_ID, nUserId);
+        _mockSession.SetInt32(SessionKey.ACCOUNT_ID, nAccountId);
 
-        decimal initialBalance = (await _inMemoryContext.Accounts.FindAsync(accountId))?.Balance ?? 0;
-        Models.Account? account = await _inMemoryContext.Accounts.FindAsync(accountId);
-        decimal withdrawAmount = initialBalance + account!.Overdraft;
+        decimal mInitialBalance = (await _inMemoryContext.Accounts.FindAsync(nAccountId))?.Balance ?? 0;
+        Models.Account? account = await _inMemoryContext.Accounts.FindAsync(nAccountId);
+        decimal mWithdrawAmount = mInitialBalance + account!.Overdraft;
 
         // Act
-        ViewResult? result = await _controller.Withdraw(withdrawAmount) as ViewResult;
+        ViewResult? result = await _controller.Withdraw(mWithdrawAmount) as ViewResult;
         AccountViewModel? viewModel = result?.Model as AccountViewModel;
 
         // Assert
@@ -138,25 +137,25 @@ public class WithdrawControllerTest
         Assert.IsNotNull(viewModel);
         Assert.AreEqual(WithdrawMessages.WithdrawSuccessful, viewModel.SuccessMessage);
 
-        decimal? updatedBalance = (await _inMemoryContext.Accounts.FindAsync(accountId))?.Balance;
-        Assert.AreEqual(-account.Overdraft, updatedBalance);
+        decimal? mUpdatedBalance = (await _inMemoryContext.Accounts.FindAsync(nAccountId))?.Balance;
+        Assert.AreEqual(-account.Overdraft, mUpdatedBalance);
     }
 
     [TestMethod]
     public async Task Withdraw_DisplaysError_WhenExceedingLimit()
     {
         // Arrange
-        const int userId = 1;
-        const int accountId = 1;
-        _mockSession.SetInt32(SessionKey.USER_ID, userId);
-        _mockSession.SetInt32(SessionKey.ACCOUNT_ID, accountId);
+        const int nUserId = 1;
+        const int nAccountId = 1;
+        _mockSession.SetInt32(SessionKey.USER_ID, nUserId);
+        _mockSession.SetInt32(SessionKey.ACCOUNT_ID, nAccountId);
 
-        decimal initialBalance = (await _inMemoryContext.Accounts.FindAsync(accountId))?.Balance ?? 0;
-        Models.Account? account = await _inMemoryContext.Accounts.FindAsync(accountId);
-        decimal withdrawAmount = initialBalance + account!.Overdraft + 0.05m; // Überschreiten der Limite
+        decimal mInitialBalance = (await _inMemoryContext.Accounts.FindAsync(nAccountId))?.Balance ?? 0;
+        Models.Account? account = await _inMemoryContext.Accounts.FindAsync(nAccountId);
+        decimal mWithdrawAmount = mInitialBalance + account!.Overdraft + 0.05m; // Überschreiten der Limite
 
         // Act
-        ViewResult? result = await _controller.Withdraw(withdrawAmount) as ViewResult;
+        ViewResult? result = await _controller.Withdraw(mWithdrawAmount) as ViewResult;
         AccountViewModel? viewModel = result?.Model as AccountViewModel;
 
         // Assert
@@ -166,21 +165,21 @@ public class WithdrawControllerTest
         Assert.AreEqual(WithdrawMessages.WithdrawExceedsLimit, viewModel.ErrorMessage);
 
         // Check if balance has not changed
-        decimal? updatedBalance = (await _inMemoryContext.Accounts.FindAsync(accountId))?.Balance;
-        Assert.AreEqual(initialBalance, updatedBalance);
+        decimal? mUpdatedBalance = (await _inMemoryContext.Accounts.FindAsync(nAccountId))?.Balance;
+        Assert.AreEqual(mInitialBalance, mUpdatedBalance);
     }
 
     [TestMethod]
     public async Task Withdraw_NoBalanceChange_WhenTransactionFails()
     {
         // Arrange
-        const int userId = 1;
-        const int accountId = 1;
+        const int nUserId = 1;
+        const int nAccountId = 1;
 
-        _mockSession.SetInt32(SessionKey.USER_ID, userId);
+        _mockSession.SetInt32(SessionKey.USER_ID, nUserId);
         _mockSession.SetInt32(SessionKey.ACCOUNT_ID, 999); // Falsche Konto-ID, um Transaktionsfehler zu erzwingen
 
-        decimal initialBalance = (await _inMemoryContext.Accounts.FindAsync(accountId))?.Balance ?? 0;
+        decimal mInitialBalance = (await _inMemoryContext.Accounts.FindAsync(nAccountId))?.Balance ?? 0;
 
         // Act
         ViewResult? result = await _controller.Withdraw(50m) as ViewResult;
@@ -193,8 +192,8 @@ public class WithdrawControllerTest
         Assert.AreEqual(WithdrawMessages.AccountNotFound, viewModel.ErrorMessage);
 
         // Überprüfe, dass der Kontostand unverändert geblieben ist
-        decimal? updatedBalance = (await _inMemoryContext.Accounts.FindAsync(accountId))?.Balance;
-        Assert.AreEqual(initialBalance, updatedBalance);
+        decimal? mUpdatedBalance = (await _inMemoryContext.Accounts.FindAsync(nAccountId))?.Balance;
+        Assert.AreEqual(mInitialBalance, mUpdatedBalance);
     }
 
     [TestMethod]

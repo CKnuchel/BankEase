@@ -1,5 +1,4 @@
 ﻿using BankEase.Common;
-using BankEase.Common.Messages;
 using BankEase.Data;
 using BankEase.Models;
 using BankEase.Services;
@@ -7,19 +6,23 @@ using BankEase.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Storage;
 
-public class TransactionController(DatabaseContext context, ValidationService validationService, SessionService sessionService, TransactionService transactionService, AccountService accountService) : Controller
+public class TransactionController(DatabaseContext context, IHttpContextAccessor httpContextAccessor) : Controller
 {
     #region Fields
     public TransactionViewModel _transactionViewModel = new();
+    private readonly ValidationService _validationService = new();
+    private readonly SessionService _sessionService = new(httpContextAccessor);
+    private readonly AccountService _accountService = new(context);
+    private readonly TransactionService _transactionService = new(context);
     #endregion
 
     #region Publics
     public async Task<IActionResult> Index()
     {
-        if(!sessionService.IsAccountSessionValid(out int? nUserId, out int? nAccountId))
+        if(!_sessionService.IsAccountSessionValid(out int? nUserId, out int? nAccountId))
             return RedirectToHomeOrAccount(nUserId);
 
-        Account? account = await accountService.GetAccountById(nAccountId!.Value);
+        Account? account = await _accountService.GetAccountById(nAccountId!.Value);
         if(account == null) return RedirectToAction("Index", "Account");
 
         _transactionViewModel.CurrentSaldo = account.Balance;
@@ -29,35 +32,36 @@ public class TransactionController(DatabaseContext context, ValidationService va
     public async Task<IActionResult> Transfer(string strIBAN, decimal mAmount)
     {
         // IBAN- und Betragsvalidierung über den ValidationService
-        if(!validationService.IsAmountValid(mAmount, out string? amountErrorMessage))
-            return CreateErrorMessage(amountErrorMessage!, strIBAN, mAmount);
+        if(!_validationService.IsAmountValid(mAmount, out string? strAmountErrorMessage))
+            return CreateErrorMessage(strAmountErrorMessage!, strIBAN, mAmount);
 
-        if(!validationService.IsIBANValid(strIBAN, out string? ibanErrorMessage))
-            return CreateErrorMessage(ibanErrorMessage!, strIBAN, mAmount);
+        if(!_validationService.IsIBANValid(strIBAN, out string? strIBANErrorMessage))
+            return CreateErrorMessage(strIBANErrorMessage!, strIBAN, mAmount);
 
         // Starte die Transaktion
         await using IDbContextTransaction transaction = await context.Database.BeginTransactionAsync();
         try
         {
             // Validieren der UserSession
-            if(!sessionService.IsAccountSessionValid(out int? nUserId, out int? nAccountId))
+            if(!_sessionService.IsAccountSessionValid(out _, out int? nAccountId))
                 return RedirectToAction("Index", "Account");
 
             // Überprüfen ob ein Account vorhanden ist
-            Account? account = await accountService.GetAccountById(nAccountId!.Value);
-            if(account == null) return CreateErrorMessage(TransactionMessages.AccountNotFound, strIBAN, mAmount);
+            Account? account = await _accountService.GetAccountById(nAccountId!.Value);
+            if(account == null)
+                return CreateErrorMessage(TransactionMessages.AccountNotFound, strIBAN, mAmount);
 
             // Den Account des Empfängers, anhand der IBAN laden
-            Account? receivingAccount = await accountService.GetAccountByIBAN(strIBAN);
+            Account? receivingAccount = await _accountService.GetAccountByIBAN(strIBAN);
             if(receivingAccount == null)
                 return CreateErrorMessage(TransactionMessages.NoMatchingAccountFoundToIBAN, strIBAN, mAmount);
 
             // Überprüfen ob ausreichend Guthaben auf dem Konto ist
-            if(!transactionService.HasSufficientFunds(account, mAmount))
+            if(!_transactionService.HasSufficientFunds(account, mAmount))
                 return CreateErrorMessage(TransactionMessages.TransactionExceedsLimit, strIBAN, mAmount);
 
             // Transaktion erstellen und ausführen
-            _transactionViewModel.CurrentSaldo = await transactionService.ExecuteTransactionAsync(account, receivingAccount, mAmount);
+            _transactionViewModel.CurrentSaldo = await _transactionService.ExecuteTransactionAsync(account, receivingAccount, mAmount);
             await transaction.CommitAsync();
 
             return CreateSuccessMessage(TransactionMessages.TransferSuccessful);
@@ -71,12 +75,20 @@ public class TransactionController(DatabaseContext context, ValidationService va
     #endregion
 
     #region Privates
-    private IActionResult RedirectToHomeOrAccount(int? nUserId)
+    private IActionResult CreateSuccessMessage(string strMessage)
+    {
+        _transactionViewModel.SuccessMessage = strMessage;
+        _transactionViewModel.ErrorMessage = null;
+        return View("Index", _transactionViewModel);
+    }
+    #endregion
+
+    private protected IActionResult RedirectToHomeOrAccount(int? nUserId)
     {
         return nUserId is null or 0 ? RedirectToAction("Index", "Home") : RedirectToAction("Index", "Account");
     }
 
-    private IActionResult CreateErrorMessage(string message, string? iban = null, decimal? amount = null)
+    private protected IActionResult CreateErrorMessage(string strMessage, string? strIBAN = null, decimal? mAmount = null)
     {
         // Saldo des aktuellen Kontos abrufen, um ihn im Fehlerfall ebenfalls anzuzeigen
         int? nAccountId = this.HttpContext.Session.GetInt32(SessionKey.ACCOUNT_ID);
@@ -89,19 +101,11 @@ public class TransactionController(DatabaseContext context, ValidationService va
             }
         }
 
-        _transactionViewModel.ErrorMessage = message;
+        _transactionViewModel.ErrorMessage = strMessage;
         _transactionViewModel.SuccessMessage = null;
-        _transactionViewModel.IBAN = iban;
-        _transactionViewModel.Amount = amount;
+        _transactionViewModel.IBAN = strIBAN;
+        _transactionViewModel.Amount = mAmount;
 
         return View("Index", _transactionViewModel);
     }
-
-    private IActionResult CreateSuccessMessage(string message)
-    {
-        _transactionViewModel.SuccessMessage = message;
-        _transactionViewModel.ErrorMessage = null;
-        return View("Index", _transactionViewModel);
-    }
-    #endregion
 }

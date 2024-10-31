@@ -1,4 +1,4 @@
-﻿namespace BankEase.Common.TransactionHelper;
+﻿namespace BankEase.Common;
 
 public static class TransactionType
 {
@@ -7,6 +7,5 @@ public static class TransactionType
     public static string DepositText => "Einzahlung";
     public static char Withdraw => 'D';
     public static string WithdrawText => "Auszahlung";
-
     #endregion
 }

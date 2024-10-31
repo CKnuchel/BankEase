@@ -1,8 +1,6 @@
 ﻿using BankEase.Common;
-using BankEase.Common.Messages;
 using BankEase.Data;
 using BankEase.Models;
-using BankEase.Services;
 using BankEase.ViewModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -31,17 +29,13 @@ namespace BankEase.Test.Controller.Transaction
         private DatabaseContext _inMemoryContext = null!;
         private TransactionController _controller = null!;
         private MockSession _mockSession = null!;
-        private ValidationService _validationService = null!;
-        private SessionService _sessionService = null!;
-        private TransactionService _transactionService = null!;
-        private AccountService _accountService = null!;
         #endregion
 
         #region Initialize and Cleanup
         [TestInitialize]
         public void TestInitialize()
         {
-            // In-Memory Database erstellen
+            // SQLite verwenden, da die InMemory-Datenbank keine Transaktionen unterstützt
             DbContextOptions<DatabaseContext> options = new DbContextOptionsBuilder<DatabaseContext>()
                                                         .UseSqlite("DataSource=:memory:")
                                                         .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
@@ -53,21 +47,20 @@ namespace BankEase.Test.Controller.Transaction
 
             // MockSession erstellen
             _mockSession = new MockSession();
-            _validationService = new ValidationService();
 
-            Mock<IHttpContextAccessor> mockHttpContextAccessor = new();
-            Mock<HttpContext> mockHttpContext = new();
+            // Setup von HttpContext und IHttpContextAccessor
+            Mock<IHttpContextAccessor> mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
+            Mock<HttpContext> mockHttpContext = new Mock<HttpContext>();
 
-            // Services initialisieren
-            _sessionService = new SessionService(mockHttpContextAccessor.Object);
-            _transactionService = new TransactionService(_inMemoryContext);
-            _accountService = new AccountService(_inMemoryContext);
+            // Sitzung in HttpContext einrichten
+            mockHttpContext.Setup(s => s.Session).Returns(_mockSession);
+            mockHttpContextAccessor.Setup(s => s.HttpContext).Returns(mockHttpContext.Object);
 
             mockHttpContext.Setup(s => s.Session).Returns(_mockSession);
             mockHttpContextAccessor.Setup(s => s.HttpContext).Returns(mockHttpContext.Object);
 
             // Controller initialisieren
-            _controller = new TransactionController(_inMemoryContext, _validationService, _sessionService, _transactionService, _accountService)
+            _controller = new TransactionController(_inMemoryContext, mockHttpContextAccessor.Object)
                           {
                               ControllerContext = new ControllerContext
                                                   {
@@ -123,10 +116,10 @@ namespace BankEase.Test.Controller.Transaction
         public async Task Transfer_DisplaysErrorMessage_WhenAmountInvalid()
         {
             // Arrange
-            const decimal invalidAmount = -100;
+            const decimal mInvalidAmount = -100;
 
             // Act
-            IActionResult result = await _controller.Transfer(SenderIban, invalidAmount);
+            IActionResult result = await _controller.Transfer(SenderIban, mInvalidAmount);
             ViewResult? viewResult = result as ViewResult;
             TransactionViewModel? viewModel = viewResult?.Model as TransactionViewModel;
 
@@ -140,10 +133,10 @@ namespace BankEase.Test.Controller.Transaction
         public async Task Transfer_DisplaysErrorMessage_WhenIBANInvalid()
         {
             // Arrange
-            const decimal validAmount = 100;
+            const decimal mValidAmount = 100;
 
             // Act
-            IActionResult result = await _controller.Transfer(InvalidIban, validAmount);
+            IActionResult result = await _controller.Transfer(InvalidIban, mValidAmount);
             ViewResult? viewResult = result as ViewResult;
             TransactionViewModel? viewModel = viewResult?.Model as TransactionViewModel;
 
@@ -157,12 +150,12 @@ namespace BankEase.Test.Controller.Transaction
         public async Task Transfer_SuccessfulTransfer_UpdatesSaldoAndReturnsSuccessMessage()
         {
             // Arrange
-            const decimal transferAmount = 100;
+            const decimal mTransferAmount = 100;
             _mockSession.SetInt32(SessionKey.USER_ID, SenderUserId);
             _mockSession.SetInt32(SessionKey.ACCOUNT_ID, SenderAccountId);
 
             // Act
-            IActionResult result = await _controller.Transfer(ReceiverIban, transferAmount);
+            IActionResult result = await _controller.Transfer(ReceiverIban, mTransferAmount);
             ViewResult? viewResult = result as ViewResult;
             TransactionViewModel? viewModel = viewResult?.Model as TransactionViewModel;
 
@@ -170,19 +163,19 @@ namespace BankEase.Test.Controller.Transaction
             Assert.IsNotNull(viewResult);
             Assert.AreEqual("Index", viewResult.ViewName);
             Assert.AreEqual(TransactionMessages.TransferSuccessful, viewModel!.SuccessMessage);
-            Assert.AreEqual(InitialSenderBalance - transferAmount, viewModel.CurrentSaldo);
+            Assert.AreEqual(InitialSenderBalance - mTransferAmount, viewModel.CurrentSaldo);
         }
 
         [TestMethod]
         public async Task Transfer_AllowsTransferWithinOverdraftLimit()
         {
             // Arrange
-            const decimal transferAmount = InitialSenderBalance + OverdraftLimit - 50; // 50 unterhalb des Overdraft Limits
+            const decimal mTransferAmount = InitialSenderBalance + OverdraftLimit - 50; // 50 unterhalb des Overdraft Limits
             _mockSession.SetInt32(SessionKey.USER_ID, SenderUserId);
             _mockSession.SetInt32(SessionKey.ACCOUNT_ID, SenderAccountId);
 
             // Act
-            IActionResult result = await _controller.Transfer(ReceiverIban, transferAmount);
+            IActionResult result = await _controller.Transfer(ReceiverIban, mTransferAmount);
             ViewResult? viewResult = result as ViewResult;
             TransactionViewModel? viewModel = viewResult?.Model as TransactionViewModel;
 
@@ -190,19 +183,19 @@ namespace BankEase.Test.Controller.Transaction
             Assert.IsNotNull(viewResult);
             Assert.AreEqual("Index", viewResult.ViewName);
             Assert.AreEqual(TransactionMessages.TransferSuccessful, viewModel!.SuccessMessage);
-            Assert.AreEqual(InitialSenderBalance - transferAmount, viewModel.CurrentSaldo);
+            Assert.AreEqual(InitialSenderBalance - mTransferAmount, viewModel.CurrentSaldo);
         }
 
         [TestMethod]
         public async Task Transfer_DeniesTransferBeyondOverdraftLimit()
         {
             // Arrange
-            const decimal transferAmount = InitialSenderBalance + OverdraftLimit + 50; // 50 über dem Overdraft Limit
+            const decimal mTransferAmount = InitialSenderBalance + OverdraftLimit + 50; // 50 über dem Overdraft Limit
             _mockSession.SetInt32(SessionKey.USER_ID, SenderUserId);
             _mockSession.SetInt32(SessionKey.ACCOUNT_ID, SenderAccountId);
 
             // Act
-            IActionResult result = await _controller.Transfer(ReceiverIban, transferAmount);
+            IActionResult result = await _controller.Transfer(ReceiverIban, mTransferAmount);
             ViewResult? viewResult = result as ViewResult;
             TransactionViewModel? viewModel = viewResult?.Model as TransactionViewModel;
 

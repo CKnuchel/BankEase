@@ -17,6 +17,7 @@ public class AccountServiceTests
     [TestInitialize]
     public void TestInitialize()
     {
+        // Aufsetzen des InMemoryContexts
         DbContextOptions<DatabaseContext> options = new DbContextOptionsBuilder<DatabaseContext>()
                                                     .UseInMemoryDatabase(databaseName: "BankEaseTestDb")
                                                     .Options;

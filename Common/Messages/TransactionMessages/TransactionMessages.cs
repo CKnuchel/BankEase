@@ -1,4 +1,4 @@
-﻿namespace BankEase.Common.Messages;
+﻿namespace BankEase.Common;
 
 public class TransactionMessages
 {

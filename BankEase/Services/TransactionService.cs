@@ -1,4 +1,4 @@
-﻿using BankEase.Common.TransactionHelper;
+﻿using BankEase.Common;
 using BankEase.Data;
 using BankEase.Models;
 
@@ -7,20 +7,20 @@ namespace BankEase.Services;
 public class TransactionService(DatabaseContext context)
 {
     #region Publics
-    public bool HasSufficientFunds(Account account, decimal amount)
+    public bool HasSufficientFunds(Account account, decimal mAmount)
     {
-        return account.Balance - amount >= -account.Overdraft;
+        return account.Balance - mAmount >= -account.Overdraft;
     }
 
-    public async Task<decimal> ExecuteTransactionAsync(Account account, Account receivingAccount, decimal amount)
+    public async Task<decimal> ExecuteTransactionAsync(Account account, Account receivingAccount, decimal mAmount)
     {
         // Transaktionsdatensätze erstellen und hinzufügen
-        context.TransactionRecords.Add(CreateWithdrawTransactionRecord(account, amount));
-        context.TransactionRecords.Add(CreateDepositTransactionRecord(receivingAccount, amount));
+        context.TransactionRecords.Add(CreateWithdrawTransactionRecord(account, mAmount));
+        context.TransactionRecords.Add(CreateDepositTransactionRecord(receivingAccount, mAmount));
 
         // Guthaben aktualisieren
-        account.Balance -= amount;
-        receivingAccount.Balance += amount;
+        account.Balance -= mAmount;
+        receivingAccount.Balance += mAmount;
 
         // Speichern
         await context.SaveChangesAsync();
@@ -61,12 +61,12 @@ public class TransactionService(DatabaseContext context)
     #endregion
 
     #region Privates
-    private TransactionRecord CreateWithdrawTransactionRecord(Account account, decimal amount)
+    private static TransactionRecord CreateWithdrawTransactionRecord(Account account, decimal mAmount)
     {
         return new TransactionRecord
                {
                    AccountId = account.Id,
-                   Amount = amount,
+                   Amount = mAmount,
                    Type = TransactionType.Withdraw,
                    Text = TransactionType.WithdrawText,
                    TransactionTime = DateTime.Now,
@@ -74,12 +74,12 @@ public class TransactionService(DatabaseContext context)
                };
     }
 
-    private TransactionRecord CreateDepositTransactionRecord(Account account, decimal amount)
+    private static TransactionRecord CreateDepositTransactionRecord(Account account, decimal mAmount)
     {
         return new TransactionRecord
                {
                    AccountId = account.Id,
-                   Amount = amount,
+                   Amount = mAmount,
                    Type = TransactionType.Deposit,
                    Text = TransactionType.DepositText,
                    TransactionTime = DateTime.Now,

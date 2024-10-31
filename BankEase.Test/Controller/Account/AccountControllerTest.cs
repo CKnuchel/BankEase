@@ -1,5 +1,4 @@
 ﻿using BankEase.Common;
-using BankEase.Common.Messages.AccountMessages;
 using BankEase.Controllers;
 using BankEase.Data;
 using BankEase.Models;
@@ -30,6 +29,7 @@ namespace BankEase.Test.Controller.Account
         [TestInitialize]
         public void TestInitialize()
         {
+            // Aufsetzen der SQLite-InMemory-Datenbank
             DbContextOptions<DatabaseContext> options = new DbContextOptionsBuilder<DatabaseContext>()
                                                         .UseSqlite("DataSource=:memory:")
                                                         .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning))
@@ -41,13 +41,17 @@ namespace BankEase.Test.Controller.Account
 
             _mockSession = new MockSession();
 
+            // Mocken des IHttpContextAccessor
             Mock<IHttpContextAccessor> mockHttpContextAccessor = new();
             Mock<HttpContext> mockHttpContext = new();
 
+            // Mocken des HttpContext
             mockHttpContext.Setup(s => s.Session).Returns(_mockSession);
 
+            // Mocken des HttpContextAccessor
             mockHttpContextAccessor.Setup(s => s.HttpContext).Returns(mockHttpContext.Object);
 
+            // Controller instanzieren
             _controller = new AccountController(_inMemoryContext, mockHttpContextAccessor.Object)
                           {
                               ControllerContext = new ControllerContext
@@ -72,10 +76,10 @@ namespace BankEase.Test.Controller.Account
         public async Task Index_ReturnsViewWithAccountOptions_WhenUserIdIsProvided()
         {
             // Arrange
-            const int userId = 1;
-            const int accountId = 1;
-            _mockSession.SetInt32(SessionKey.USER_ID, userId);
-            _mockSession.SetInt32(SessionKey.ACCOUNT_ID, accountId);
+            const int nUserId = 1;
+            const int nAccountId = 1;
+            _mockSession.SetInt32(SessionKey.USER_ID, nUserId);
+            _mockSession.SetInt32(SessionKey.ACCOUNT_ID, nAccountId);
 
             // Act
             ViewResult? result = await _controller.Index() as ViewResult;
@@ -165,7 +169,7 @@ namespace BankEase.Test.Controller.Account
             _inMemoryContext.SaveChanges();
         }
 
-        private List<Customer> GetTestCustomers()
+        private static List<Customer> GetTestCustomers()
         {
             List<Customer> customers =
             [
