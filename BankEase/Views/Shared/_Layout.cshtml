@@ -20,10 +20,22 @@
             @if(Context.Session.GetInt32(SessionKey.USER_ID) != null && Context.Session.GetInt32(SessionKey.ACCOUNT_ID) != null)
             {
                 <div class="flex items-center space-x-4">
-                    <a asp-controller="Deposit" asp-action="Index" class="text-gray-700 hover:text-indigo-600 font-medium">Einzahlen</a>
-                    <a asp-controller="Withdraw" asp-action="Index" class="text-gray-700 hover:text-indigo-600 font-medium">Abheben</a>
-                    <a asp-controller="Transaction" asp-action="Index" class="text-gray-700 hover:text-indigo-600 font-medium">Überweisung</a>
-                    <a asp-controller="Logout" asp-action="Logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md">Logout</a>
+                    <a asp-controller="Deposit" asp-action="Index"
+                       class="text-gray-700 hover:text-indigo-600 font-medium">
+                        Einzahlen
+                    </a>
+                    <a asp-controller="Withdraw" asp-action="Index"
+                       class="text-gray-700 hover:text-indigo-600 font-medium">
+                        Abheben
+                    </a>
+                    <a asp-controller="Transaction" asp-action="Index"
+                       class="text-gray-700 hover:text-indigo-600 font-medium">
+                        Überweisung
+                    </a>
+                    <a asp-controller="Logout" asp-action="Logout"
+                       class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md">
+                        Logout
+                    </a>
                 </div>
             }
         </div>
