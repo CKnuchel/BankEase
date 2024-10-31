@@ -81,6 +81,49 @@ public class AccountServiceTests
         // Assert
         Assert.IsNull(customer);
     }
+
+    [TestMethod]
+    public async Task GetAccountById_ReturnsAccount_WhenAccountExists()
+    {
+        // Act
+        Account? account = await _accountService.GetAccountById(1);
+
+        // Assert
+        Assert.IsNotNull(account);
+        Assert.AreEqual(1, account.Id);
+        Assert.AreEqual("CH9300762011623852957", account.IBAN);
+    }
+
+    [TestMethod]
+    public async Task GetAccountById_ReturnsNull_WhenAccountDoesNotExist()
+    {
+        // Act
+        Account? account = await _accountService.GetAccountById(999);
+
+        // Assert
+        Assert.IsNull(account);
+    }
+
+    [TestMethod]
+    public async Task GetAccountByIBAN_ReturnsAccount_WhenIBANExists()
+    {
+        // Act
+        Account? account = await _accountService.GetAccountByIBAN("CH9300762011623852957");
+
+        // Assert
+        Assert.IsNotNull(account);
+        Assert.AreEqual("CH9300762011623852957", account.IBAN);
+    }
+
+    [TestMethod]
+    public async Task GetAccountByIBAN_ReturnsNull_WhenIBANDoesNotExist()
+    {
+        // Act
+        Account? account = await _accountService.GetAccountByIBAN("CH0000000000000000000");
+
+        // Assert
+        Assert.IsNull(account);
+    }
     #endregion
 
     #region Privates
