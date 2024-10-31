@@ -13,7 +13,7 @@
     <nav class="bg-white w-full shadow-md fixed top-0">
         <div class="px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
             <div class="flex items-center">
-                <a asp-controller="Home" asp-action="Index" class="text-xl font-bold text-indigo-600">BankEase</a>
+                <a class="text-xl font-bold text-indigo-600">BankEase</a>
             </div>
 
             <!-- Nur anzeigen, wenn Session-Variablen gesetzt sind (Eingeloggt) -->
@@ -23,6 +23,7 @@
                     <a asp-controller="Deposit" asp-action="Index" class="text-gray-700 hover:text-indigo-600 font-medium">Einzahlen</a>
                     <a asp-controller="Withdraw" asp-action="Index" class="text-gray-700 hover:text-indigo-600 font-medium">Abheben</a>
                     <a asp-controller="Transaction" asp-action="Index" class="text-gray-700 hover:text-indigo-600 font-medium">Überweisung</a>
+                    <a asp-controller="Logout" asp-action="Logout" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md">Logout</a>
                 </div>
             }
         </div>

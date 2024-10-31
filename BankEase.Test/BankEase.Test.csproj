@@ -31,6 +31,7 @@
     <Folder Include="Controller\Home\" />
     <Folder Include="Controller\Account\" />
     <Folder Include="Controller\Deposit\" />
+    <Folder Include="Controller\Logout\" />
     <Folder Include="Controller\Withdraw\" />
   </ItemGroup>
 
