@@ -19,7 +19,7 @@ namespace BankEase.Controllers
         public async Task<IActionResult> Index()
         {
             // Benutzer-ID in der Sitzung validieren
-            if(!_sessionService.IsUserSessionValid(out int? userId, out _))
+            if(!_sessionService.IsUserSessionValid(out int? userId))
                 return RedirectToAction("Index", "Home");
 
             // Benutzerkonten abrufen

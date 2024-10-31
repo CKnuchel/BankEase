@@ -21,7 +21,7 @@ namespace BankEase.Controllers
         public async Task<IActionResult> Index()
         {
             // Sitzungsvalidierung
-            if(!_sessionService.IsUserSessionValid(out int? userId, out int? accountId))
+            if(!_sessionService.IsAccountSessionValid(out int? userId, out int? accountId))
                 return RedirectToHomeOrAccount(userId);
 
             // Kontodetails laden
@@ -43,7 +43,7 @@ namespace BankEase.Controllers
             try
             {
                 // Sitzungskontovalidierung
-                if(!_sessionService.IsAccountSessionValid(out int? accountId))
+                if(!_sessionService.IsAccountSessionValid(out int? nUserId, out int? accountId))
                     return RedirectToAction("Index", "Account");
 
                 // Konto laden

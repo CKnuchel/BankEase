@@ -16,7 +16,7 @@ public class TransactionController(DatabaseContext context, ValidationService va
     #region Publics
     public async Task<IActionResult> Index()
     {
-        if(!sessionService.IsUserSessionValid(out int? nUserId, out int? nAccountId))
+        if(!sessionService.IsAccountSessionValid(out int? nUserId, out int? nAccountId))
             return RedirectToHomeOrAccount(nUserId);
 
         Account? account = await transactionService.GetAccountById(nAccountId!.Value);
@@ -40,7 +40,7 @@ public class TransactionController(DatabaseContext context, ValidationService va
         try
         {
             // Validieren der UserSession
-            if(!sessionService.IsAccountSessionValid(out int? nAccountId))
+            if(!sessionService.IsAccountSessionValid(out int? nUserId, out int? nAccountId))
                 return RedirectToAction("Index", "Account");
 
             // Überprüfen ob ein Account vorhanden ist
