@@ -178,6 +178,59 @@ public class TransactionServiceTests
         Assert.AreEqual(depositAmount, transactionRecord.Amount);
         Assert.AreEqual(TransactionType.Deposit, transactionRecord.Type);
     }
+
+    [TestMethod]
+    public async Task WithdrawAsync_DecreasesBalanceCorrectly()
+    {
+        // Arrange
+        Account account = await _transactionService.GetAccountById(1);
+        decimal initialBalance = account!.Balance;
+        decimal withdrawAmount = 200m;
+
+        // Act
+        decimal updatedBalance = await _transactionService.WithdrawAsync(account, withdrawAmount);
+
+        // Assert
+        Assert.AreEqual(initialBalance - withdrawAmount, updatedBalance);
+        Assert.AreEqual(updatedBalance, account.Balance);
+    }
+
+    [TestMethod]
+    public async Task WithdrawAsync_CreatesTransactionRecord()
+    {
+        // Arrange
+        Account? account = await _transactionService.GetAccountById(1);
+        int initialTransactionCount = _inMemoryContext.TransactionRecords.Count();
+        const decimal withdrawAmount = 150m;
+
+        // Act
+        await _transactionService.WithdrawAsync(account!, withdrawAmount);
+        int finalTransactionCount = _inMemoryContext.TransactionRecords.Count();
+
+        // Assert
+        Assert.AreEqual(initialTransactionCount + 1, finalTransactionCount);
+
+        TransactionRecord transactionRecord = _inMemoryContext.TransactionRecords.OrderBy(tr => tr.TransactionTime).Last();
+        Assert.IsNotNull(account);
+        Assert.AreEqual(account.Id, transactionRecord.AccountId);
+        Assert.AreEqual(withdrawAmount, transactionRecord.Amount);
+        Assert.AreEqual(TransactionType.Withdraw, transactionRecord.Type);
+    }
+
+    [TestMethod]
+    public async Task WithdrawAsync_ReturnsUpdatedBalance_AfterTransaction()
+    {
+        // Arrange
+        Account? account = await _transactionService.GetAccountById(1);
+        decimal initialBalance = account!.Balance;
+        const decimal withdrawAmount = 100m;
+
+        // Act
+        decimal updatedBalance = await _transactionService.WithdrawAsync(account, withdrawAmount);
+
+        // Assert
+        Assert.AreEqual(initialBalance - withdrawAmount, updatedBalance);
+    }
     #endregion
 
     #region Privates

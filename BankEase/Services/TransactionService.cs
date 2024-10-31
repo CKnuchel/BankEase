@@ -55,6 +55,21 @@ public class TransactionService(DatabaseContext context)
         // neues Guthaben zurückgeben
         return account.Balance;
     }
+
+    public async Task<decimal> WithdrawAsync(Account account, decimal mAmount)
+    {
+        // Transaktionsdatensätze erstellen und hinzufügen
+        context.TransactionRecords.Add(CreateWithdrawTransactionRecord(account, mAmount));
+
+        // Guthaben aktualisieren
+        account.Balance -= mAmount;
+
+        // Speichern 
+        await context.SaveChangesAsync();
+
+        // neues Guthaben zurückgeben
+        return account.Balance;
+    }
     #endregion
 
     #region Privates

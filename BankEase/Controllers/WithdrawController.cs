@@ -1,11 +1,9 @@
-﻿using BankEase.Common;
-using BankEase.Common.Messages;
-using BankEase.Common.TransactionHelper;
+﻿using BankEase.Common.Messages;
 using BankEase.Data;
 using BankEase.Models;
+using BankEase.Services;
 using BankEase.ViewModel;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace BankEase.Controllers
@@ -14,61 +12,55 @@ namespace BankEase.Controllers
     {
         #region Fields
         private readonly AccountViewModel _accountViewModel = new(httpContextAccessor.HttpContext!, context);
+        private readonly SessionService _sessionService = new(httpContextAccessor);
+        private readonly TransactionService _transactionService = new(context);
+        private readonly ValidationService _validationService = new();
         #endregion
 
         #region Publics
         public async Task<IActionResult> Index()
         {
-            int? nUserId = this.HttpContext.Session.GetInt32(SessionKey.USER_ID);
-            int? nAccountId = this.HttpContext.Session.GetInt32(SessionKey.ACCOUNT_ID);
+            // Sitzungsvalidierung
+            if(!_sessionService.IsUserSessionValid(out int? userId, out int? accountId))
+                return RedirectToHomeOrAccount(userId);
 
-            if(nUserId is null or 0) return RedirectToAction("Index", "Home");
-            if(nAccountId is null or 0) return RedirectToAction("Index", "Account");
+            // Kontodetails laden
+            Account? account = await _transactionService.GetAccountById(accountId!.Value);
+            if(account == null) return RedirectToAction("Index", "Account");
 
-            Account account = (await context.Accounts.FirstOrDefaultAsync(account => account.Id.Equals(nAccountId.Value)))!;
-
-            AccountViewModel viewModel = new AccountViewModel(this.HttpContext, context) { CurrentSaldo = account.Balance };
-
+            AccountViewModel viewModel = new(this.HttpContext, context) { CurrentSaldo = account.Balance };
             return View(viewModel);
         }
 
         [HttpPost]
         public async Task<IActionResult> Withdraw(decimal mAmount)
         {
-            if(mAmount <= 0m)
-            {
-                AccountViewModel viewModel = await _accountViewModel.WithMessage(WithdrawMessages.WithdrawAmountMustBeGreaterThanZero, isErrorMessage: true);
-                return View("Index", viewModel);
-            }
+            // Betragsvalidierung
+            if(!_validationService.IsAmountValid(mAmount, out string? amountErrorMessage))
+                return CreateErrorMessage(amountErrorMessage!);
 
             await using IDbContextTransaction transaction = await context.Database.BeginTransactionAsync();
             try
             {
-                int? nAccountId = this.HttpContext.Session.GetInt32(SessionKey.ACCOUNT_ID);
-                if(nAccountId is null or 0) return RedirectToAction("Index", "Account");
+                // Sitzungskontovalidierung
+                if(!_sessionService.IsAccountSessionValid(out int? accountId))
+                    return RedirectToAction("Index", "Account");
 
-                Account? account = await context.Accounts.FirstOrDefaultAsync(a => a.Id == nAccountId);
+                // Konto laden
+                Account? account = await _transactionService.GetAccountById(accountId!.Value);
                 if(account == null)
-                {
-                    AccountViewModel viewModel = await _accountViewModel.WithMessage(WithdrawMessages.AccountNotFound, isErrorMessage: true);
-                    return View("Index", viewModel);
-                }
+                    return CreateErrorMessage(WithdrawMessages.AccountNotFound);
 
-                if(account.Balance - mAmount < -account.Overdraft)
-                {
-                    AccountViewModel viewModel = await _accountViewModel.WithMessage(WithdrawMessages.WithdrawExceedsLimit, isErrorMessage: true);
-                    return View("Index", viewModel);
-                }
+                // Überziehungslimit überprüfen
+                if(!_transactionService.HasSufficientFunds(account, mAmount))
+                    return CreateErrorMessage(WithdrawMessages.WithdrawExceedsLimit);
 
-                context.TransactionRecords.Add(CreateTransactionRecord(account, mAmount));
-
-                account.Balance -= mAmount;
-                await context.SaveChangesAsync();
-
+                // Transaktion ausführen
+                decimal updatedBalance = await _transactionService.WithdrawAsync(account, mAmount);
                 await transaction.CommitAsync();
 
-                AccountViewModel successViewModel = await _accountViewModel.WithMessage(WithdrawMessages.WithdrawSuccessful, isErrorMessage: false);
-                return View("Index", successViewModel);
+                _accountViewModel.CurrentSaldo = updatedBalance;
+                return CreateSuccessMessage(WithdrawMessages.WithdrawSuccessful);
             }
             catch(Exception)
             {
@@ -84,17 +76,23 @@ namespace BankEase.Controllers
         #endregion
 
         #region Privates
-        private TransactionRecord CreateTransactionRecord(Account account, decimal amount)
+        private IActionResult CreateErrorMessage(string message)
         {
-            return new TransactionRecord
-                   {
-                       AccountId = account.Id,
-                       Amount = amount,
-                       Type = TransactionType.Withdraw,
-                       Text = TransactionType.WithdrawText,
-                       TransactionTime = DateTime.Now,
-                       Account = account
-                   };
+            _accountViewModel.ErrorMessage = message;
+            _accountViewModel.SuccessMessage = null;
+            return View("Index", _accountViewModel);
+        }
+
+        private IActionResult CreateSuccessMessage(string message)
+        {
+            _accountViewModel.SuccessMessage = message;
+            _accountViewModel.ErrorMessage = null;
+            return View("Index", _accountViewModel);
+        }
+
+        private IActionResult RedirectToHomeOrAccount(int? userId)
+        {
+            return userId is null or 0 ? RedirectToAction("Index", "Home") : RedirectToAction("Index", "Account");
         }
         #endregion
     }
