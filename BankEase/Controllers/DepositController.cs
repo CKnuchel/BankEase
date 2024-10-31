@@ -1,10 +1,9 @@
 ﻿using BankEase.Common;
-using BankEase.Common.TransactionHelper;
 using BankEase.Data;
 using BankEase.Models;
+using BankEase.Services;
 using BankEase.ViewModel;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace BankEase.Controllers
@@ -13,55 +12,50 @@ namespace BankEase.Controllers
     {
         #region Fields
         private readonly AccountViewModel _accountViewModel = new(httpContextAccessor.HttpContext!, context);
+        private readonly SessionService _sessionService = new(httpContextAccessor);
+        private readonly TransactionService _transactionService = new(context);
+        private readonly ValidationService _validationService = new();
         #endregion
 
         #region Publics
         public async Task<IActionResult> Index()
         {
-            int? nUserId = this.HttpContext.Session.GetInt32(SessionKey.USER_ID);
-            int? nAccountId = this.HttpContext.Session.GetInt32(SessionKey.ACCOUNT_ID);
+            // Sitzungsvalidierung
+            if(!_sessionService.IsUserSessionValid(out int? userId, out int? accountId))
+                return RedirectToHomeOrAccount(userId);
 
-            if(nUserId is null or 0) return RedirectToAction("Index", "Home");
-            if(nAccountId is null or 0) return RedirectToAction("Index", "Account");
-
-            Account? account = await context.Accounts.FirstOrDefaultAsync(a => a.Id == nAccountId);
+            // Kontodetails laden
+            Account? account = await _transactionService.GetAccountById(accountId!.Value);
             if(account == null) return RedirectToAction("Index", "Account");
 
-            AccountViewModel viewModel = new AccountViewModel(this.HttpContext, context) { CurrentSaldo = account.Balance };
+            AccountViewModel viewModel = new(this.HttpContext, context) { CurrentSaldo = account.Balance };
             return View(viewModel);
         }
 
         [HttpPost]
         public async Task<IActionResult> Deposit(decimal mAmount)
         {
-            if(mAmount <= 0m)
-            {
-                AccountViewModel viewModel = await _accountViewModel.WithMessage(DepositMessages.DepositAmountMustBeGreaterThanZero, isErrorMessage: true);
-                return View("Index", viewModel);
-            }
+            // Betragsvalidierung
+            if(!_validationService.IsAmountValid(mAmount, out string? amountErrorMessage))
+                return CreateErrorMessage(amountErrorMessage!);
 
             await using IDbContextTransaction transaction = await context.Database.BeginTransactionAsync();
             try
             {
-                int? nAccountId = this.HttpContext.Session.GetInt32(SessionKey.ACCOUNT_ID);
-                if(nAccountId is null or 0) return RedirectToAction("Index", "Account");
+                // Sitzungsvalidierung
+                if(!_sessionService.IsAccountSessionValid(out int? nAccountId))
+                    return RedirectToAction("Index", "Account");
 
-                Account? account = await context.Accounts.FirstOrDefaultAsync(a => a.Id == nAccountId);
+                Account? account = await _transactionService.GetAccountById(nAccountId!.Value);
                 if(account == null)
-                {
-                    AccountViewModel viewModel = await _accountViewModel.WithMessage(DepositMessages.AccountNotFound, isErrorMessage: true);
-                    return View("Index", viewModel);
-                }
+                    return CreateErrorMessage(DepositMessages.AccountNotFound);
 
-                context.TransactionRecords.Add(CreateTransactionRecord(account, mAmount));
-
-                account.Balance += mAmount;
-                await context.SaveChangesAsync();
-
+                // Transaktion ausführen
+                decimal updatedBalance = await _transactionService.DepositAsync(account, mAmount);
                 await transaction.CommitAsync();
 
-                AccountViewModel successViewModel = await _accountViewModel.WithMessage(DepositMessages.DepositSuccessful, isErrorMessage: false);
-                return View("Index", successViewModel);
+                _accountViewModel.CurrentSaldo = updatedBalance;
+                return CreateSuccessMessage(DepositMessages.DepositSuccessful);
             }
             catch(Exception)
             {
@@ -77,17 +71,23 @@ namespace BankEase.Controllers
         #endregion
 
         #region Privates
-        private static TransactionRecord CreateTransactionRecord(Account account, decimal amount)
+        private IActionResult RedirectToHomeOrAccount(int? userId)
         {
-            return new TransactionRecord
-                   {
-                       AccountId = account.Id,
-                       Amount = amount,
-                       Type = TransactionType.Deposit,
-                       Text = TransactionType.DepositText,
-                       TransactionTime = DateTime.Now,
-                       Account = account
-                   };
+            return userId is null or 0 ? RedirectToAction("Index", "Home") : RedirectToAction("Index", "Account");
+        }
+
+        private IActionResult CreateErrorMessage(string message)
+        {
+            _accountViewModel.ErrorMessage = message;
+            _accountViewModel.SuccessMessage = null;
+            return View("Index", _accountViewModel);
+        }
+
+        private IActionResult CreateSuccessMessage(string message)
+        {
+            _accountViewModel.SuccessMessage = message;
+            _accountViewModel.ErrorMessage = null;
+            return View("Index", _accountViewModel);
         }
         #endregion
     }

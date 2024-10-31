@@ -36,8 +36,8 @@ public class DepositControllerTest
 
         _mockSession = new MockSession();
 
-        Mock<IHttpContextAccessor> mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
-        Mock<HttpContext> mockHttpContext = new Mock<HttpContext>();
+        Mock<IHttpContextAccessor> mockHttpContextAccessor = new();
+        Mock<HttpContext> mockHttpContext = new();
 
         mockHttpContext.Setup(s => s.Session).Returns(_mockSession);
         mockHttpContextAccessor.Setup(s => s.HttpContext).Returns(mockHttpContext.Object);
@@ -152,20 +152,20 @@ public class DepositControllerTest
     #region Privates
     private void AddTestData()
     {
-        List<Customer> customers = new List<Customer>
-                                   {
-                                       new()
-                                       {
-                                           Id = 1,
-                                           FirstName = "Max",
-                                           LastName = "Mustermann",
-                                           City = "Musterstadt",
-                                           CustomerNumber = "123456",
-                                           Street = "Mustergasse 1",
-                                           Title = "Herr",
-                                           ZipCode = 3000
-                                       }
-                                   };
+        List<Customer> customers =
+        [
+            new()
+            {
+                Id = 1,
+                FirstName = "Max",
+                LastName = "Mustermann",
+                City = "Musterstadt",
+                CustomerNumber = "123456",
+                Street = "Mustergasse 1",
+                Title = "Herr",
+                ZipCode = 3000
+            }
+        ];
 
         _inMemoryContext.Customers.AddRange(customers);
 

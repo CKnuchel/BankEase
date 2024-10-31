@@ -40,6 +40,21 @@ public class TransactionService(DatabaseContext context)
         // Rückgabe des aktualisierten Saldos
         return account.Balance;
     }
+
+    public async Task<decimal> DepositAsync(Account account, decimal mAmount)
+    {
+        // Transaktionsdatensätze erstellen und hinzufügen
+        context.TransactionRecords.Add(CreateDepositTransactionRecord(account, mAmount));
+
+        // Guthaben aktualisieren
+        account.Balance += mAmount;
+
+        // Speichern 
+        await context.SaveChangesAsync();
+
+        // neues Guthaben zurückgeben
+        return account.Balance;
+    }
     #endregion
 
     #region Privates

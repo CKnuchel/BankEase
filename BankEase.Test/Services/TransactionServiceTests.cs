@@ -1,4 +1,5 @@
-﻿using BankEase.Data;
+﻿using BankEase.Common.TransactionHelper;
+using BankEase.Data;
 using BankEase.Models;
 using BankEase.Services;
 using Microsoft.EntityFrameworkCore;
@@ -138,6 +139,44 @@ public class TransactionServiceTests
         Assert.AreEqual(700m, senderAccount.Balance);
         Assert.AreEqual(400m, receiverAccount.Balance);
         Assert.AreEqual(700m, updatedBalance);
+    }
+
+    [TestMethod]
+    public async Task DepositAsync_IncreasesBalanceCorrectly()
+    {
+        // Arrange
+        Account? account = await _transactionService.GetAccountById(1);
+        decimal initialBalance = account!.Balance;
+        const decimal depositAmount = 200m;
+
+        // Act
+        decimal updatedBalance = await _transactionService.DepositAsync(account, depositAmount);
+
+        // Assert
+        Assert.AreEqual(initialBalance + depositAmount, updatedBalance);
+        Assert.AreEqual(updatedBalance, account.Balance);
+    }
+
+    [TestMethod]
+    public async Task DepositAsync_CreatesTransactionRecord()
+    {
+        // Arrange
+        Account? account = await _transactionService.GetAccountById(1);
+        int initialTransactionCount = _inMemoryContext.TransactionRecords.Count();
+        const decimal depositAmount = 150m;
+
+        // Act
+        await _transactionService.DepositAsync(account!, depositAmount);
+        int finalTransactionCount = _inMemoryContext.TransactionRecords.Count();
+
+        // Assert
+        Assert.AreEqual(initialTransactionCount + 1, finalTransactionCount);
+
+        TransactionRecord transactionRecord = _inMemoryContext.TransactionRecords.OrderBy(tr => tr.TransactionTime).Last();
+        Assert.IsNotNull(account);
+        Assert.AreEqual(account.Id, transactionRecord.AccountId);
+        Assert.AreEqual(depositAmount, transactionRecord.Amount);
+        Assert.AreEqual(TransactionType.Deposit, transactionRecord.Type);
     }
     #endregion
 
