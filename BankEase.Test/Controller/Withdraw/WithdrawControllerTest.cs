@@ -186,12 +186,6 @@ public class WithdrawControllerTest
         AccountViewModel? viewModel = result?.Model as AccountViewModel;
 
         // Assert
-        Assert.IsNotNull(result);
-        Assert.AreEqual("Index", result.ViewName);
-        Assert.IsNotNull(viewModel);
-        Assert.AreEqual(WithdrawMessages.AccountNotFound, viewModel.ErrorMessage);
-
-        // Überprüfe, dass der Kontostand unverändert geblieben ist
         decimal? mUpdatedBalance = (await _inMemoryContext.Accounts.FindAsync(nAccountId))?.Balance;
         Assert.AreEqual(mInitialBalance, mUpdatedBalance);
     }

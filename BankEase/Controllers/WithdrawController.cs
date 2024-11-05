@@ -40,8 +40,11 @@ namespace BankEase.Controllers
             await using IDbContextTransaction transaction = await context.Database.BeginTransactionAsync();
             try
             {
-                if(!_sessionService.IsAccountSessionValid(out _, out int? nAccountId))
+                if(!_sessionService.IsAccountSessionValid(out int? nUserId, out int? nAccountId))
                     return RedirectToAction("Index", "Account");
+
+                if(_accountService.EnsureAccountBelongsToCustomer(nAccountId!.Value, nUserId!.Value).Result == false)
+                    return RedirectToAction("Index", "Home");
 
                 Account? account = await _accountService.GetAccountById(nAccountId!.Value);
                 if(account == null)

@@ -24,6 +24,9 @@ namespace BankEase.Controllers
             if(!_sessionService.IsAccountSessionValid(out int? nUserId, out int? nAccountId))
                 return RedirectToHomeOrAccount(nUserId);
 
+            if(_accountService.EnsureAccountBelongsToCustomer(nAccountId!.Value, nUserId!.Value).Result == false)
+                return RedirectToHomeOrAccount(nUserId);
+
             Account? account = await _accountService.GetAccountById(nAccountId!.Value);
             if(account == null) return RedirectToAction("Index", "Account");
 

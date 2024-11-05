@@ -125,6 +125,26 @@ public class AccountServiceTests
         // Assert
         Assert.IsNull(account);
     }
+
+    [TestMethod]
+    public async Task EnsureAccountBelongsToCustomer_ReturnsTrue_WhenAccountBelongsToCustomer()
+    {
+        // Act
+        bool result = await _accountService.EnsureAccountBelongsToCustomer(1, 1);
+
+        // Assert
+        Assert.IsTrue(result);
+    }
+
+    [TestMethod]
+    public async Task EnsureAccountBelongsToCustomer_ReturnsFalse_WhenAccountDoesNotBelongToCustomer()
+    {
+        // Act
+        bool result = await _accountService.EnsureAccountBelongsToCustomer(1, 2);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
     #endregion
 
     #region Privates

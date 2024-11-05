@@ -30,5 +30,10 @@ public class AccountService(DatabaseContext context)
         strIBAN = strIBAN.Replace(" ", "");
         return await context.Accounts.FirstOrDefaultAsync(account => account.IBAN == strIBAN);
     }
+
+    public async Task<bool> EnsureAccountBelongsToCustomer(int nAccountId, int nCustomerId)
+    {
+        return await context.Accounts.AnyAsync(account => account.Id == nAccountId && account.CustomerId == nCustomerId);
+    }
     #endregion
 }
