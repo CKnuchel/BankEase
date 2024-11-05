@@ -38,14 +38,3 @@
         <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300 mt-4">Einzahlen</button>
     </form>
 </div>
-
-<script>
-    // Verhindert das einfügen des Buchstaben 'E', sowie der -/+ Zeichen
-    function preventInvalidNumberInputs(event)
-    {
-        if(["e", "E", "+", "-"].includes(event.key))
-        {
-            event.preventDefault();
-        }
-    }
-</script>
